@@ -4,6 +4,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(shinyalert)
 library(shinycssloaders)
+library(dplyr)
 
 # Carregar módulos
 source("modules/page1.R")
@@ -31,7 +32,7 @@ server <- function(input, output, session) {
             padding-top: 100px;
           }
         "))),
-        tags$img(src = "logo.png", height = "200px"),
+        tags$img(src = "img/logo.png", height = "200px"),
         br(), br(),
         actionBttn("login_btn", "Entrar", style = "gradient", color = "success", size = "lg")
       )
