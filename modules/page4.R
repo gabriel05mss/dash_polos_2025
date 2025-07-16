@@ -6,6 +6,6 @@ page4UI <- function(id) {
   )
 }
 
-page4Server <- function(input, output, session) {
+page4Server <- function(input, output, session, dados) {
   output$msg <- renderText("Conteúdo da Página 4")
 }

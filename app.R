@@ -5,9 +5,13 @@ library(shinyWidgets)
 library(shinyalert)
 library(shinycssloaders)
 library(dplyr)
+library(readxl)
+library(janitor)
+library(stringr)
+
 
 # Carregar módulos
-source("modules/page1.R")
+source("modules/Psexo.R")
 source("modules/page2.R")
 source("modules/page3.R")
 source("modules/page4.R")
@@ -15,13 +19,29 @@ source("modules/page4.R")
 ui <- fluidPage(
   useShinyjs(),
   useShinyalert(force = TRUE),
-  uiOutput("main_ui")  # Tudo será carregado aqui dinamicamente
+  uiOutput("main_ui")
 )
 
 server <- function(input, output, session) {
   user_logged <- reactiveVal(FALSE)
   
-  # UI principal só aparece após login
+
+  #carregar dados 
+dados <- read_excel("dados/dados_edu.xlsx", col_types = "text") %>% 
+    clean_names()
+  
+dados <- dados %>%
+  mutate(across(
+    .cols = where(~ all(grepl("^[0-9\\.,%]*$", .), na.rm = TRUE)), 
+    .fns  = ~ {
+      x <- .x
+      tem_pct <- str_detect(x, fixed("%"))
+      num <- as.numeric(str_replace_all(x, c("%" = "", "," = ".")))
+      ifelse(tem_pct, num/100, num)
+    }
+  ))
+  
+   
   output$main_ui <- renderUI({
     if (!user_logged()) {
       fluidPage(
@@ -50,7 +70,7 @@ server <- function(input, output, session) {
           title = "Menu",
           brandColor = "primary",
           bs4SidebarMenu(
-            bs4SidebarMenuItem("Página 1", tabName = "page1", icon = icon("chart-line")),
+            bs4SidebarMenuItem("Página 1", tabName = "Psexo", icon = icon("person")),
             bs4SidebarMenuItem("Página 2", tabName = "page2", icon = icon("table")),
             bs4SidebarMenuItem("Página 3", tabName = "page3", icon = icon("cogs")),
             bs4SidebarMenuItem("Página 4", tabName = "page4", icon = icon("file-alt"))
@@ -59,7 +79,7 @@ server <- function(input, output, session) {
         
         body = bs4DashBody(
           bs4TabItems(
-            bs4TabItem(tabName = "page1", page1UI("page1")),
+            bs4TabItem(tabName = "Psexo", PsexoUI("Psexo")),
             bs4TabItem(tabName = "page2", page2UI("page2")),
             bs4TabItem(tabName = "page3", page3UI("page3")),
             bs4TabItem(tabName = "page4", page4UI("page4"))
@@ -79,10 +99,10 @@ server <- function(input, output, session) {
     user_logged(TRUE)
   })
   
-  callModule(page1Server, "page1")
-  callModule(page2Server, "page2")
-  callModule(page3Server, "page3")
-  callModule(page4Server, "page4")
+  callModule(PsexoServer, "Psexo", dados = dados)
+  callModule(page2Server, "page2", dados = dados)
+  callModule(page3Server, "page3", dados = dados)
+  callModule(page4Server, "page4", dados = dados)
 }
 
 shinyApp(ui, server)

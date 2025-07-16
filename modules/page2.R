@@ -11,7 +11,7 @@ page2UI <- function(id) {
   )
 }
 
-page2Server <- function(input, output, session) {
+page2Server <- function(input, output, session, dados) {
   output$tbl <- DT::renderDataTable({
     mtcars %>% head(10)
   })
