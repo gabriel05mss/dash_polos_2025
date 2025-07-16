@@ -8,13 +8,15 @@ library(dplyr)
 library(readxl)
 library(janitor)
 library(stringr)
-
+library(highcharter)
+library(purrr)
+library(DT)
 
 # Carregar módulos
 source("modules/Psexo.R")
-source("modules/page2.R")
-source("modules/page3.R")
-source("modules/page4.R")
+source("modules/Pidade.R")
+source("modules/deficiente.R")
+source("modules/equipe.R")
 
 ui <- fluidPage(
   useShinyjs(),
@@ -61,7 +63,7 @@ dados <- dados %>%
         fullscreen = TRUE,
         controlbar = NULL,
         
-        header = bs4DashNavbar(title = "Dashboard Modular"),
+        header = bs4DashNavbar(title = "abas"), #trocar depois
         
         sidebar = bs4DashSidebar(
           collapsed = FALSE,
@@ -70,24 +72,24 @@ dados <- dados %>%
           title = "Menu",
           brandColor = "primary",
           bs4SidebarMenu(
-            bs4SidebarMenuItem("Página 1", tabName = "Psexo", icon = icon("person")),
-            bs4SidebarMenuItem("Página 2", tabName = "page2", icon = icon("table")),
-            bs4SidebarMenuItem("Página 3", tabName = "page3", icon = icon("cogs")),
-            bs4SidebarMenuItem("Página 4", tabName = "page4", icon = icon("file-alt"))
+            bs4SidebarMenuItem("sexo", tabName = "Psexo", icon = icon("person")), #trocar depois
+            bs4SidebarMenuItem("faixa etaria", tabName = "Pidade", icon = icon("calendar")), #trocar depois
+            bs4SidebarMenuItem("deficiencia", tabName = "deficiente", icon = icon("wheelchair")), #trocar depois
+            bs4SidebarMenuItem("equipe", tabName = "equipe", icon = icon("address-card")) #trocas depois
           )
         ),
         
         body = bs4DashBody(
           bs4TabItems(
             bs4TabItem(tabName = "Psexo", PsexoUI("Psexo")),
-            bs4TabItem(tabName = "page2", page2UI("page2")),
-            bs4TabItem(tabName = "page3", page3UI("page3")),
-            bs4TabItem(tabName = "page4", page4UI("page4"))
+            bs4TabItem(tabName = "Pidade", PidadeUI("Pidade")),
+            bs4TabItem(tabName = "deficiente", deficienteUI("deficiente")),
+            bs4TabItem(tabName = "equipe", equipeUI("equipe"))
           )
         ),
         
         footer = bs4DashFooter(
-          left = "Criado com ❤️ em Shiny",
+          left = "Por POLOS-UFMG", #trocar depois
           right = Sys.Date()
         )
       )
@@ -100,9 +102,9 @@ dados <- dados %>%
   })
   
   callModule(PsexoServer, "Psexo", dados = dados)
-  callModule(page2Server, "page2", dados = dados)
-  callModule(page3Server, "page3", dados = dados)
-  callModule(page4Server, "page4", dados = dados)
+  callModule(PidadeServer, "Pidade", dados = dados)
+  callModule(deficienteServer, "deficiente", dados = dados)
+  callModule(equipeServer, "equipe", dados = dados)
 }
 
 shinyApp(ui, server)

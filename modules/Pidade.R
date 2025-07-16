@@ -1,10 +1,10 @@
-PsexoUI <- function(id) {
+PidadeUI <- function(id) {
   ns <- NS(id)
   fluidPage(
     
     fluidRow(
       box(
-        title = h1('Análises por sexo', align = 'center'), #trocar titulo
+        title = h1('Análises por faixa etaria', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -69,7 +69,7 @@ PsexoUI <- function(id) {
   )
 }
 
-PsexoServer <- function(input, output, session, dados) {
+PidadeServer <- function(input, output, session, dados) {
   ns <- session$ns
   
   # REATIVOS ----
@@ -235,14 +235,4 @@ PsexoServer <- function(input, output, session, dados) {
       )
   })
   
-  #output$plot_1 = renderHighchart({ 
-    #req(df$filtrado)
-    #continuar a desenvolver graficos, usar df$filtrado
-  #})
-  
-  #replicar codigo acima para todos os graficos
-  #lembrar de trocar o id do grafico para nn dar conflito
 }
-
-
-
