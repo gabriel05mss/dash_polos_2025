@@ -235,9 +235,8 @@ PsexoServer <- function(input, output, session, dados) {
       )
   })
   
-  #output$plot_1 = renderHighchart({ 
+  #output$plot_1 = renderHighchart({
     #req(df$filtrado)
-    #continuar a desenvolver graficos, usar df$filtrado
   #})
   
   #replicar codigo acima para todos os graficos
