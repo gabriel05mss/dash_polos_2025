@@ -4,7 +4,7 @@ PsexoUI <- function(id) {
     
     fluidRow(
       box(
-        title = h1('Análises por sexo', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População em Situação de Rua no Brasil - Dezembro/2024 ', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -21,7 +21,7 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População Negra', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -29,7 +29,7 @@ PsexoUI <- function(id) {
       ),
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População Não Negra', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -40,7 +40,7 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('titulo', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -48,7 +48,7 @@ PsexoUI <- function(id) {
       ),
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('titulo ', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,

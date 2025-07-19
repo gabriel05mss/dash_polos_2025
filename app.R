@@ -63,7 +63,7 @@ dados <- dados %>%
         fullscreen = TRUE,
         controlbar = NULL,
         
-        header = bs4DashNavbar(title = "abas"), #trocar depois
+        header = bs4DashNavbar(title = "Categorias"), #trocar depois
         
         sidebar = bs4DashSidebar(
           collapsed = FALSE,
@@ -72,10 +72,10 @@ dados <- dados %>%
           title = "Menu",
           brandColor = "primary",
           bs4SidebarMenu(
-            bs4SidebarMenuItem("sexo", tabName = "Psexo", icon = icon("person")), #trocar depois
-            bs4SidebarMenuItem("faixa etaria", tabName = "Pidade", icon = icon("calendar")), #trocar depois
-            bs4SidebarMenuItem("deficiencia", tabName = "deficiente", icon = icon("wheelchair")), #trocar depois
-            bs4SidebarMenuItem("equipe", tabName = "equipe", icon = icon("address-card")) #trocas depois
+            bs4SidebarMenuItem("Sexo", tabName = "Psexo", icon = icon("person")), #trocar depois
+            bs4SidebarMenuItem("Faixa etária", tabName = "Pidade", icon = icon("calendar")), #trocar depois
+            bs4SidebarMenuItem("Pessoa possui Deficiência", tabName = "deficiente", icon = icon("wheelchair")), #trocar depois
+            bs4SidebarMenuItem("Equipe", tabName = "equipe", icon = icon("address-card")) #trocas depois
           )
         ),
         
@@ -89,7 +89,8 @@ dados <- dados %>%
         ),
         
         footer = bs4DashFooter(
-          left = "Por POLOS-UFMG", #trocar depois
+          left = "Fonte: Levantamento realizado pelo Observatório Brasileiro de Políticas Públicas com a População em Situação de
+Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro/2024)", #trocar depois
           right = Sys.Date()
         )
       )

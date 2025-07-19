@@ -62,15 +62,13 @@ equipeUI <- function(id) {
         
         # Membro 1
         div(class = "member-card",
-            div(class = "member-name", "João Silva"),
+            div(class = "member-name", "Caique Izidoro Alvarenga"),
             tags$ul(class = "member-role",
-                    tags$li("Estatístico"),
-                    tags$li("Professor"),
-                    tags$li("Pesquisador")
+                    tags$li("Pesquisador extensionista")
             ),
-            a(icon("linkedin"), href = "https://linkedin.com/in/joaosilva", class = "icon-btn", target = "_blank"),
-            a(icon("file-alt"), href = "http://lattes.cnpq.br/123456789", class = "icon-btn", target = "_blank"),
-            a(icon("envelope"), href = "mailto:joao@email.com", class = "icon-btn")
+            a(icon("linkedin"), href = "https://linkedin.com/in/caiqueizidr", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "caiqueizidoro369@gmail.com", class = "icon-btn")
         ),
         
         # Membro 2

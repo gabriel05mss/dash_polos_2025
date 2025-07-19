@@ -4,7 +4,7 @@ deficienteUI <- function(id) {
     
     fluidRow(
       box(
-        title = h1('Análises pessoas com deficiencia', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População em Situação de Rua no Brasil - Dezembro/2024', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -21,7 +21,7 @@ deficienteUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Negra', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -29,7 +29,7 @@ deficienteUI <- function(id) {
       ),
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Não Negra', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
