@@ -85,7 +85,7 @@ equipeUI <- function(id) {
         
         # Membro 3
         div(class = "member-card",
-            div(class = "member-name", "Pedro Almeida"),
+            div(class = "member-name", "Pedro Almeida R."),
             tags$ul(class = "member-role",
                     tags$li("Desenvolvedor Shiny"),
                     tags$li("Engenheiro de Dados")

@@ -21,7 +21,7 @@ PidadeUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('Escolaridade por Faixa Etária - População Negra', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Faixa Etária - População Negra', align = 'center'), #trocar tituloo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,

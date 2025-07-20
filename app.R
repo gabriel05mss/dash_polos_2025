@@ -11,6 +11,8 @@ library(stringr)
 library(highcharter)
 library(purrr)
 library(DT)
+library(tidyverse)
+library(scales)
 
 # Carregar módulos
 source("modules/Psexo.R")
@@ -90,7 +92,7 @@ dados <- dados %>%
         
         footer = bs4DashFooter(
           left = "Fonte: Levantamento realizado pelo Observatório Brasileiro de Políticas Públicas com a População em Situação de
-Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro/2024)", #trocar depois
+Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro/2024) ", #trocar depois
           right = Sys.Date()
         )
       )
