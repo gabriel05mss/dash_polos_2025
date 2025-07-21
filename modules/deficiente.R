@@ -242,8 +242,152 @@ deficienteServer <- function(input, output, session, dados) {
   
   #replicar codigo acima para todos os graficos
   #lembrar de trocar o id do grafico para nn dar conflito
+
+# DADOS PREPARADOS (reativo único com estrutura tidy)
+dados_plot_raca <- reactive({
+  
+  dadosdf1 <- dados %>%
+    select(
+      municipio, mesorregioes, microrregioes, estado, uf,
+      total_pop_em_situacao_de_rua,
+      masculino, feminino,
+      sem_instrucao, fundamental_incompleto, fundamental_completo,
+      medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+      sem_resposta_18,
+      branca, preta, amarela, parda, indigena, sem_resposta_30,
+      sim_162, nao_164
+    ) %>%
+    mutate(across(
+      c(masculino, feminino, total_pop_em_situacao_de_rua,
+        sem_instrucao, fundamental_incompleto, fundamental_completo,
+        medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+        sem_resposta_18, branca, preta, amarela, parda, indigena,
+        sem_resposta_30, sim_162, nao_164),
+      ~ as.numeric(.)
+    )) %>%
+    mutate(
+      prop_df_sim = ifelse(total_pop_em_situacao_de_rua > 0, sim_162 / total_pop_em_situacao_de_rua, 0),
+      prop_df_nao = ifelse(total_pop_em_situacao_de_rua > 0, nao_164 / total_pop_em_situacao_de_rua, 0),
+      pop_negra = preta + parda,
+      pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
+      prop_negra = ifelse(total_pop_em_situacao_de_rua > 0, pop_negra / total_pop_em_situacao_de_rua, 0),
+      prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0, pop_nao_negra / total_pop_em_situacao_de_rua, 0)
+    ) %>%
+    pivot_longer(
+      cols = c(
+        sem_instrucao, fundamental_incompleto, fundamental_completo,
+        medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+        sem_resposta_18
+      ),
+      names_to = "GrauInstrucao",
+      values_to = "PopulacaoGrau"
+    ) %>%
+    mutate(
+      PopulacaoGrau = as.numeric(PopulacaoGrau),
+      pop_df_sim_negra      = PopulacaoGrau * prop_df_sim * prop_negra,
+      pop_df_nao_negra      = PopulacaoGrau * prop_df_nao * prop_negra,
+      pop_df_sim_nao_negra  = PopulacaoGrau * prop_df_sim * prop_nao_negra,
+      pop_df_nao_nao_negra  = PopulacaoGrau * prop_df_nao * prop_nao_negra
+    )
+  
+  # População Negra
+  dados_df_negra <- dadosdf1 %>%
+    select(municipio, mesorregioes, microrregioes, estado, uf, GrauInstrucao,
+           pop_df_sim_negra, pop_df_nao_negra) %>%
+    pivot_longer(
+      cols = c(pop_df_sim_negra, pop_df_nao_negra),
+      names_to = "Pessoa_possui_deficiencia", values_to = "Populacao"
+    ) %>%
+    mutate(
+      Possui_deficiencia = ifelse(Pessoa_possui_deficiencia == "pop_df_sim_negra", "Sim", "Não"),
+      GrupoRacial = "Negra"
+    )
+  
+  # População Não Negra
+  dados_df_nao_negra <- dadosdf1 %>%
+    select(municipio, mesorregioes, microrregioes, estado, uf, GrauInstrucao,
+           pop_df_sim_nao_negra, pop_df_nao_nao_negra) %>%
+    pivot_longer(
+      cols = c(pop_df_sim_nao_negra, pop_df_nao_nao_negra),
+      names_to = "Pessoa_possui_deficiencia", values_to = "Populacao"
+    ) %>%
+    mutate(
+      Possui_deficiencia = ifelse(Pessoa_possui_deficiencia == "pop_df_sim_nao_negra", "Sim", "Não"),
+      GrupoRacial = "Não negra"
+    )
+  
+  grau_nomes <- c(
+    "sem_instrucao" = "Sem instrução",
+    "fundamental_incompleto" = "Fund. incompleto",
+    "fundamental_completo" = "Fund. completo",
+    "medio_incompleto" = "Médio incompleto",
+    "medio_completo" = "Médio completo",
+    "superior_incompleto_ou_mais" = "Superior ou +",
+    "sem_resposta_18" = "Sem resposta"
+  )
+  
+  bind_rows(dados_df_negra, dados_df_nao_negra) %>%
+    mutate(GrauInstrucao = recode(GrauInstrucao, !!!grau_nomes))
+})
+
+
+
+plot_grafico_deficiencia <- function(dados, grupo_racial, titulo) {
+  
+  ordem_graus <- c(
+    "Sem instrução",
+    "Fund. incompleto",
+    "Fund. completo",
+    "Médio incompleto",
+    "Médio completo",
+    "Superior ou +",
+    "Sem resposta"
+  )
+  
+  dados_grafico <- dados() %>%
+    filter(GrupoRacial == grupo_racial) %>%
+    group_by(GrauInstrucao, Possui_deficiencia) %>%
+    summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
+    mutate(GrauInstrucao = factor(GrauInstrucao, levels = ordem_graus)) %>%
+    arrange(GrauInstrucao)
+  
+  categorias <- levels(dados_grafico$GrauInstrucao)
+  
+  serie_sim <- dados_grafico %>%
+    filter(Possui_deficiencia == "Sim") %>%
+    pull(Populacao)
+  
+  serie_nao <- dados_grafico %>%
+    filter(Possui_deficiencia == "Não") %>%
+    pull(Populacao)
+  
+  highchart() %>%
+    hc_chart(type = "column") %>%
+    hc_title(text = titulo) %>%
+    hc_xAxis(categories = categorias, title = list(text = "Grau de Instrução")) %>%
+    hc_yAxis(title = list(text = "População estimada"), labels = list(format = "{value:,.0f}")) %>%
+    hc_plotOptions(column = list(grouping = TRUE)) %>%
+    hc_add_series(name = "Sim", data = serie_sim, color = "#1f77b4") %>%
+    hc_add_series(name = "Não", data = serie_nao, color = "#ff7f0e") %>%
+    hc_legend(enabled = TRUE)
 }
 
+output$plot_1 <- renderHighchart({
+  plot_grafico_deficiencia(
+    dados = dados_plot_raca,
+    grupo_racial = "Negra",
+    titulo = "População Negra - Pessoa com Deficiência x Grau de Instrução"
+  )
+})
+
+output$plot_2 <- renderHighchart({
+  plot_grafico_deficiencia(
+    dados = dados_plot_raca,
+    grupo_racial = "Não negra",
+    titulo = "População Não Negra - Pessoa com Deficiência x Grau de Instrução"
+  )
+})
+}
 
 
 

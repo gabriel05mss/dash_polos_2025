@@ -62,6 +62,16 @@ equipeUI <- function(id) {
         
         # Membro 1
         div(class = "member-card",
+            div(class = "member-name", "Andrezza Cristina Santos"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/andrezza-cristina-santos-batista-b7828723a", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "andrezza-II@hotmail.com", class = "icon-btn")
+        ),
+        # Membro 2
+        div(class = "member-card",
             div(class = "member-name", "Caique Izidoro Alvarenga"),
             tags$ul(class = "member-role",
                     tags$li("Pesquisador extensionista")
@@ -70,30 +80,39 @@ equipeUI <- function(id) {
             a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
             a(icon("envelope"), href = "caiqueizidoro369@gmail.com", class = "icon-btn")
         ),
-        
-        # Membro 2
+        # Membro 3
         div(class = "member-card",
-            div(class = "member-name", "Maria Oliveira"),
+            div(class = "member-name", "Diogo Gomes Pires"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/diogo-gomes-pires-802076206", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "http://lattes.cnpq.br/5116149150044825", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "diogogomes1109@gmail.com", class = "icon-btn")
+        ),
+        
+        # Membro 4
+        div(class = "member-card",
+            div(class = "member-name", "Gabriel Moreira da Silva"),
             tags$ul(class = "member-role",
                     tags$li("Cientista de Dados"),
                     tags$li("Analista de BI")
             ),
-            a(icon("linkedin"), href = "https://linkedin.com/in/mariaoliveira", class = "icon-btn", target = "_blank"),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/gabriel-moreira-73341a23b/", class = "icon-btn", target = "_blank"),
             a(icon("file-alt"), href = "http://lattes.cnpq.br/987654321", class = "icon-btn", target = "_blank"),
-            a(icon("envelope"), href = "mailto:maria@email.com", class = "icon-btn")
+            a(icon("envelope"), href = "gmoreira.silva2005@gmail.com", class = "icon-btn")
         ),
-        
-        # Membro 3
+        # Membro 5
         div(class = "member-card",
-            div(class = "member-name", "Pedro Almeida R."),
+            div(class = "member-name", "Irlana dos Santos"),
             tags$ul(class = "member-role",
-                    tags$li("Desenvolvedor Shiny"),
-                    tags$li("Engenheiro de Dados")
+                    tags$li("Pesquisador extensionista")
             ),
-            a(icon("linkedin"), href = "https://linkedin.com/in/pedroalmeida", class = "icon-btn", target = "_blank"),
-            a(icon("file-alt"), href = "http://lattes.cnpq.br/112233445", class = "icon-btn", target = "_blank"),
-            a(icon("envelope"), href = "mailto:pedro@email.com", class = "icon-btn")
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/irlana-silva-905457185", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "irlannasilva1720@gmail.com", class = "icon-btn")
         )
+        
         #pra colocar mais só copiar a colar a div toda, NÃO ESQUECER DA VIRGULA DEPOIS DAS DIVs
     )
   )
