@@ -245,8 +245,8 @@ deficienteServer <- function(input, output, session, dados) {
 
 # DADOS PREPARADOS (reativo único com estrutura tidy)
 dados_plot_raca <- reactive({
-  
-  dadosdf1 <- dados %>%
+  req(df$filtrado) #usar dados filtrados
+  dadosdf1 <- df$filtrado %>%
     select(
       municipio, mesorregioes, microrregioes, estado, uf,
       total_pop_em_situacao_de_rua,
@@ -373,6 +373,7 @@ plot_grafico_deficiencia <- function(dados, grupo_racial, titulo) {
 }
 
 output$plot_1 <- renderHighchart({
+
   plot_grafico_deficiencia(
     dados = dados_plot_raca,
     grupo_racial = "Negra",
@@ -381,6 +382,7 @@ output$plot_1 <- renderHighchart({
 })
 
 output$plot_2 <- renderHighchart({
+
   plot_grafico_deficiencia(
     dados = dados_plot_raca,
     grupo_racial = "Não negra",
