@@ -244,7 +244,7 @@ PidadeServer <- function(input, output, session, dados) {
   #lembrar de trocar o id do grafico para nn dar conflito
   # Reativo com dados organizados por faixa etária
   dados_plot_faixa_etaria <- reactive({
-    
+    req(df$filtrado)
     colunas_faixa <- c(
       "entre_0_e_4", "entre_5_a_6", "entre_7_a_15", "entre_16_a_17", 
       "entre_18_a_24", "entre_25_a_34", "entre_35_a_39", "entre_40_a_44",
@@ -252,7 +252,7 @@ PidadeServer <- function(input, output, session, dados) {
       "maior_que_65", "sem_resposta_64", "sem_resposta_65"
     )
     
-    dados_base <- dados %>%
+    dados_base <- df$filtrado %>%
       select(
         municipio, mesorregioes, microrregioes, estado, uf,
         total_pop_em_situacao_de_rua,
