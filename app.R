@@ -13,6 +13,7 @@ library(purrr)
 library(DT)
 library(tidyverse)
 library(scales)
+library(tidyr)
 
 # Carregar módulos
 source("modules/Psexo.R")
@@ -23,6 +24,25 @@ source("modules/equipe.R")
 ui <- fluidPage(
   useShinyjs(),
   useShinyalert(force = TRUE),
+  tags$style(HTML("
+  /* Sidebar */
+  .main-sidebar, 
+  .main-sidebar .nav-link, 
+  .main-sidebar .nav-link .nav-icon, 
+  .main-sidebar .nav-link p {
+    font-size: 15px !important;
+  }
+
+  /* Título da sidebar */
+  [class*=sidebar-light] .brand-link {
+    font-size: 22px !important;
+    font-weight: bold;
+    text-align: center;
+    justify-content: center !important;  /* flexbox centraliza horizontalmente */
+    display: flex !important;
+    align-items: center;
+  }
+")),
   uiOutput("main_ui")
 )
 

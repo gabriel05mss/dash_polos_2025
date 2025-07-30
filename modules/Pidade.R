@@ -41,25 +41,6 @@ PidadeUI <- function(id) {
       
       box(
         title = h1('titulo que quiser', align = 'center'), #trocar titulo
-        width = 6,
-        collapsible = TRUE,
-        solidHeader = TRUE,
-        withSpinner(highchartOutput(ns("plot_3")), type = 1, color = "#ffae00", size = 2)
-      ),
-      
-      box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
-        width = 6,
-        collapsible = TRUE,
-        solidHeader = TRUE,
-        withSpinner(highchartOutput(ns("plot_4")), type = 1, color = "#ffae00", size = 2)
-      )
-    ),
-    
-    fluidRow(
-      
-      box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -243,141 +224,225 @@ PidadeServer <- function(input, output, session, dados) {
   #replicar codigo acima para todos os graficos
   #lembrar de trocar o id do grafico para nn dar conflito
   # Reativo com dados organizados por faixa etária
+
   dados_plot_faixa_etaria <- reactive({
     req(df$filtrado)
-    colunas_faixa <- c(
-      "entre_0_e_4", "entre_5_a_6", "entre_7_a_15", "entre_16_a_17", 
-      "entre_18_a_24", "entre_25_a_34", "entre_35_a_39", "entre_40_a_44",
-      "entre_45_a_49", "entre_50_a_54", "entre_55_a_59", "entre_60_a_64",
-      "maior_que_65", "sem_resposta_64", "sem_resposta_65"
-    )
-    
-    dados_base <- df$filtrado %>%
+    dadosfaixaetaria <- df$filtrado %>%
       select(
-        municipio, mesorregioes, microrregioes, estado, uf,
+        municipio,
+        mesorregioes,
+        microrregioes,
         total_pop_em_situacao_de_rua,
-        branca, preta, amarela, parda, indigena, sem_resposta_30,
-        sim_162, nao_164,
-        all_of(colunas_faixa)
-      ) %>%
+        entre_0_e_4,entre_5_a_6,entre_7_a_15,entre_16_a_17, 
+        entre_18_a_24, entre_25_a_34,entre_35_a_39, entre_40_a_44,
+        entre_45_a_49,entre_50_a_54, entre_55_a_59, entre_60_a_64,
+        maior_que_65,
+        sem_instrucao,
+        fundamental_incompleto, 
+        fundamental_completo,
+        medio_incompleto, 
+        medio_completo, 
+        superior_incompleto_ou_mais,
+        sem_resposta_18,
+        branca,                                                                             
+        preta,                                                                             
+        amarela,                                                                         
+        parda,                                                                              
+        indigena,                                                                         
+        sem_resposta_30,
+        estado,
+        uf
+      )
+    #---------------------
+    # 1. Garantir que todas as colunas necessárias sejam numéricas
+    dados_faixa_instrucao <- dadosfaixaetaria %>%
       mutate(across(
-        c(total_pop_em_situacao_de_rua, sim_162, nao_164,
-          branca, preta, amarela, parda, indigena, sem_resposta_30,
-          all_of(colunas_faixa)),
-        ~ as.numeric(.)
-      )) %>%
+        c(
+          total_pop_em_situacao_de_rua,
+          entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17,
+          entre_18_a_24, entre_25_a_34, entre_35_a_39,
+          entre_40_a_44, entre_45_a_49, entre_50_a_54, entre_55_a_59,
+          entre_60_a_64, maior_que_65,
+          sem_instrucao, fundamental_incompleto, fundamental_completo,
+          medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+          sem_resposta_18, branca, preta, amarela, parda, indigena, sem_resposta_30
+        ),
+        ~as.numeric(gsub(",", ".", .))
+      ))
+    
+    
+    # 2. Criar colunas de faixa etária
+    dados_faixa_instrucao <- dados_faixa_instrucao %>%
       mutate(
-        prop_df_sim = ifelse(total_pop_em_situacao_de_rua > 0, sim_162 / total_pop_em_situacao_de_rua, 0),
-        prop_df_nao = ifelse(total_pop_em_situacao_de_rua > 0, nao_164 / total_pop_em_situacao_de_rua, 0),
+        faixa_0_17 = rowSums(across(c(entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17)), na.rm = TRUE),
+        faixa_18_39 = rowSums(across(c(entre_18_a_24, entre_25_a_34, entre_35_a_39)), na.rm = TRUE),
+        faixa_40_59 = rowSums(across(c(entre_40_a_44, entre_45_a_49, entre_50_a_54, entre_55_a_59)), na.rm = TRUE),
+        faixa_60_mais = rowSums(across(c(entre_60_a_64, maior_que_65)), na.rm = TRUE)
+      )
+    
+    # 3. Calcular proporções raciais
+    dados_faixa_instrucao <- dados_faixa_instrucao %>%
+      mutate(
         pop_negra = preta + parda,
         pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
-        prop_negra = ifelse(total_pop_em_situacao_de_rua > 0, pop_negra / total_pop_em_situacao_de_rua, 0),
-        prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0, pop_nao_negra / total_pop_em_situacao_de_rua, 0)
-      ) %>%
+        prop_negra = ifelse(total_pop_em_situacao_de_rua > 0,
+                            pop_negra / total_pop_em_situacao_de_rua, 0),
+        prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0,
+                                pop_nao_negra / total_pop_em_situacao_de_rua, 0)
+      )
+    
+    # 4. Transformar faixas etárias em long
+    dados_long_faixa <- dados_faixa_instrucao %>%
+      select(municipio, mesorregioes, microrregioes, estado, uf,
+             total_pop_em_situacao_de_rua, prop_negra, prop_nao_negra,
+             faixa_0_17, faixa_18_39, faixa_40_59, faixa_60_mais) %>%
       pivot_longer(
-        cols = all_of(colunas_faixa),
-        names_to = "FaixaEtaria",
+        cols = starts_with("faixa_"),
+        names_to = "FaixaEtariaRaw",
         values_to = "PopulacaoFaixa"
       ) %>%
       mutate(
-        PopulacaoFaixa = as.numeric(PopulacaoFaixa),
-        pop_df_sim_negra      = PopulacaoFaixa * prop_df_sim * prop_negra,
-        pop_df_nao_negra      = PopulacaoFaixa * prop_df_nao * prop_negra,
-        pop_df_sim_nao_negra  = PopulacaoFaixa * prop_df_sim * prop_nao_negra,
-        pop_df_nao_nao_negra  = PopulacaoFaixa * prop_df_nao * prop_nao_negra
+        FaixaEtaria = recode(FaixaEtariaRaw,
+                             "faixa_0_17" = "0 a 17 anos",
+                             "faixa_18_39" = "18 a 39 anos",
+                             "faixa_40_59" = "40 a 59 anos",
+                             "faixa_60_mais" = "60 anos ou mais")
       )
     
-    # Base negra
-    dados_negra <- dados_base %>%
-      select(municipio, mesorregioes, microrregioes, estado, uf, FaixaEtaria,
-             pop_df_sim_negra, pop_df_nao_negra) %>%
+    # 5. Transformar graus de instrução em long
+    dados_long_instrucao <- dados_faixa_instrucao %>%
+      select(municipio, fundamental_incompleto, fundamental_completo,
+             medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+             sem_instrucao, sem_resposta_18) %>%
       pivot_longer(
-        cols = c(pop_df_sim_negra, pop_df_nao_negra),
-        names_to = "Pessoa_possui_deficiencia", values_to = "Populacao"
+        cols = c(sem_instrucao, fundamental_incompleto, fundamental_completo,
+                 medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18),
+        names_to = "GrauInstrucao",
+        values_to = "PopulacaoInstrucao"
       ) %>%
+      mutate(GrauInstrucao = recode(GrauInstrucao,
+                                    "sem_instrucao" = "Sem instrução",
+                                    "fundamental_incompleto" = "Fund. incompleto",
+                                    "fundamental_completo" = "Fund. completo",
+                                    "medio_incompleto" = "Médio incompleto",
+                                    "medio_completo" = "Médio completo",
+                                    "superior_incompleto_ou_mais" = "Superior ou +",
+                                    "sem_resposta_18" = "Sem resposta"
+      ))
+    
+    # 6. Cruzar FaixaEtaria x GrauInstrucao usando produto cartesiano
+    dados_cruzado <- dados_long_faixa %>%
+      left_join(dados_long_instrucao, by = "municipio") %>%
       mutate(
-        Possui_deficiencia = ifelse(Pessoa_possui_deficiencia == "pop_df_sim_negra", "Sim", "Não"),
-        GrupoRacial = "Negra"
+        estimativa_total = ifelse(
+          is.finite(PopulacaoFaixa) & is.finite(PopulacaoInstrucao) & total_pop_em_situacao_de_rua > 0,
+          PopulacaoFaixa * (PopulacaoInstrucao / total_pop_em_situacao_de_rua),
+          NA_real_
+        ),
+        estimativa_negra = ifelse(
+          is.finite(estimativa_total) & is.finite(prop_negra),
+          estimativa_total * prop_negra,
+          NA_real_
+        ),
+        estimativa_nao_negra = ifelse(
+          is.finite(estimativa_total) & is.finite(prop_nao_negra),
+          estimativa_total * prop_nao_negra,
+          NA_real_
+        )
       )
     
-    # Base não negra
-    dados_nao_negra <- dados_base %>%
-      select(municipio, mesorregioes, microrregioes, estado, uf, FaixaEtaria,
-             pop_df_sim_nao_negra, pop_df_nao_nao_negra) %>%
-      pivot_longer(
-        cols = c(pop_df_sim_nao_negra, pop_df_nao_nao_negra),
-        names_to = "Pessoa_possui_deficiencia", values_to = "Populacao"
-      ) %>%
-      mutate(
-        Possui_deficiencia = ifelse(Pessoa_possui_deficiencia == "pop_df_sim_nao_negra", "Sim", "Não"),
-        GrupoRacial = "Não negra"
-      )
     
-    bind_rows(dados_negra, dados_nao_negra)
+    # 7. Formatar dados finais tidy
+    # População Negra
+    dados_negra <- dados_cruzado %>%
+      select(municipio, mesorregioes, microrregioes, estado, uf,
+             FaixaEtaria, GrauInstrucao, estimativa_negra) %>%
+      rename(Populacao = estimativa_negra) %>%
+      mutate(GrupoRacial = "Negra")
+    
+    # População Não Negra
+    dados_nao_negra <- dados_cruzado %>%
+      select(municipio, mesorregioes, microrregioes, estado, uf,
+             FaixaEtaria, GrauInstrucao, estimativa_nao_negra) %>%
+      rename(Populacao = estimativa_nao_negra) %>%
+      mutate(GrupoRacial = "Não negra")
+    
+    # 8. Resultado final
+    dados_faixa_instrucao_tidy <- bind_rows(dados_negra, dados_nao_negra)
+    
   })
-  plot_grafico_faixa <- function(dados, grupo_racial, titulo) {
+  
+  
+  plot_grafico_escolaridade <- function(dados, grupo_racial, titulo = NULL) {
     
-    # Ordem das faixas etárias
-    ordem_faixas <- c(
-      "entre_0_e_4", "entre_5_a_6", "entre_7_a_15", "entre_16_a_17", 
-      "entre_18_a_24", "entre_25_a_34", "entre_35_a_39", "entre_40_a_44",
-      "entre_45_a_49", "entre_50_a_54", "entre_55_a_59", "entre_60_a_64",
-      "maior_que_65", "sem_resposta_64", "sem_resposta_65"
+    ordem_faixas <- c("0 a 17 anos", "18 a 39 anos", "40 a 59 anos", "60 anos ou mais")
+    ordem_instrucao <- c(
+      "Sem instrução", "Fundamental incompleto", "Fundamental completo",
+      "Médio incompleto", "Médio completo", "Superior ou mais", "Sem resposta"
     )
     
-    nomes_faixa <- c(
-      "entre_0_e_4" = "0 a 4", "entre_5_a_6" = "5 a 6", "entre_7_a_15" = "7 a 15",
-      "entre_16_a_17" = "16 a 17", "entre_18_a_24" = "18 a 24",
-      "entre_25_a_34" = "25 a 34", "entre_35_a_39" = "35 a 39",
-      "entre_40_a_44" = "40 a 44", "entre_45_a_49" = "45 a 49",
-      "entre_50_a_54" = "50 a 54", "entre_55_a_59" = "55 a 59",
-      "entre_60_a_64" = "60 a 64", "maior_que_65" = "65 ou +",
-      "sem_resposta_64" = "SR até 64", "sem_resposta_65" = "SR 65+"
-    )
-    
-    dados_grafico <- dados() %>%
+    # Filtro pelo grupo racial
+    dados_grafico <- dados %>%
       filter(GrupoRacial == grupo_racial) %>%
-      group_by(FaixaEtaria, Possui_deficiencia) %>%
+      group_by(GrauInstrucao, FaixaEtaria) %>%
       summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
       mutate(
         FaixaEtaria = factor(FaixaEtaria, levels = ordem_faixas),
-        FaixaEtaria = recode(FaixaEtaria, !!!nomes_faixa)
-      ) %>%
-      arrange(FaixaEtaria)
+        GrauInstrucao = factor(GrauInstrucao, levels = ordem_instrucao)
+      )
     
-    categorias <- levels(dados_grafico$FaixaEtaria)
+    categorias_x <- levels(dados_grafico$GrauInstrucao)
+    faixas <- levels(dados_grafico$FaixaEtaria)
     
-    serie_sim <- dados_grafico %>%
-      filter(Possui_deficiencia == "Sim") %>%
-      pull(Populacao)
+    # Cores para as faixas etárias
+    cores <- RColorBrewer::brewer.pal(n = max(3, min(12, length(faixas))), name = "Set2")
+    if (length(faixas) > length(cores)) {
+      cores <- rep(cores, length.out = length(faixas))
+    }
     
-    serie_nao <- dados_grafico %>%
-      filter(Possui_deficiencia == "Não") %>%
-      pull(Populacao)
+    # Título padrão se não for fornecido
+    if (is.null(titulo)) {
+      titulo <- paste("Distribuição por Escolaridade e Faixa Etária -", grupo_racial)
+    }
     
-    highchart() %>%
+    # Cria o gráfico
+    hc <- highchart() %>%
       hc_chart(type = "column") %>%
       hc_title(text = titulo) %>%
-      hc_xAxis(categories = categorias, title = list(text = "Faixa Etária")) %>%
-      hc_yAxis(title = list(text = "População estimada"), labels = list(format = "{value:,.0f}")) %>%
+      hc_xAxis(categories = categorias_x, title = list(text = "Grau de Instrução")) %>%
+      hc_yAxis(title = list(text = "População Estimada"), labels = list(format = "{value:,.0f}")) %>%
       hc_plotOptions(column = list(grouping = TRUE)) %>%
-      hc_add_series(name = "Sim", data = serie_sim, color = "#1f77b4") %>%
-      hc_add_series(name = "Não", data = serie_nao, color = "#ff7f0e") %>%
-      hc_legend(enabled = TRUE)
+      hc_legend(title = list(text = "Faixa Etária"), enabled = TRUE)
+    
+    # Adiciona as séries por faixa etária
+    for (i in seq_along(faixas)) {
+      faixa_i <- faixas[i]
+      dados_i <- dados_grafico %>%
+        filter(FaixaEtaria == faixa_i) %>%
+        arrange(match(GrauInstrucao, categorias_x)) %>%
+        pull(Populacao)
+      
+      hc <- hc %>%
+        hc_add_series(name = faixa_i, data = dados_i, color = cores[i])
+    }
+    
+    hc
   }
+  
+  
   output$plot_1 <- renderHighchart({
-    plot_grafico_faixa(
-      dados = dados_plot_faixa_etaria,
+    plot_grafico_escolaridade(
+      dados = dados_plot_faixa_etaria(),
       grupo_racial = "Negra",
-      titulo = "População Negra - Pessoa com Deficiência x Faixa Etária"
+      titulo = "População Negra - Grau de Instrução x Faixa Etária"
     )
   })
   
   output$plot_2 <- renderHighchart({
-    plot_grafico_faixa(
-      dados = dados_plot_faixa_etaria,
+    plot_grafico_escolaridade(
+      dados = dados_plot_faixa_etaria(),
       grupo_racial = "Não negra",
-      titulo = "População Não Negra - Pessoa com Deficiência x Faixa Etária"
+      titulo = "População Não Negra - Grau de Instrução x Faixa Etária"
     )
   })
 }

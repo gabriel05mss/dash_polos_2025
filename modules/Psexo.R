@@ -40,25 +40,6 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo', align = 'center'), #trocar titulo
-        width = 6,
-        collapsible = TRUE,
-        solidHeader = TRUE,
-        withSpinner(highchartOutput(ns("plot_3")), type = 1, color = "#ffae00", size = 2)
-      ),
-      
-      box(
-        title = h1('titulo ', align = 'center'), #trocar titulo
-        width = 6,
-        collapsible = TRUE,
-        solidHeader = TRUE,
-        withSpinner(highchartOutput(ns("plot_4")), type = 1, color = "#ffae00", size = 2)
-      )
-    ),
-    
-    fluidRow(
-      
-      box(
         title = h1('titulo que quiser', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
