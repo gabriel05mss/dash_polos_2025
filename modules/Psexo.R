@@ -40,7 +40,7 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Ranking Municípios', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -163,61 +163,146 @@ PsexoServer <- function(input, output, session, dados) {
   
   #OUTPUT ----
   ##tabela ----
-  output$tabela = renderDataTable({
-    req(dados)
-    dados_aux = dados %>%
-      select(estado, uf, everything(), -arquivo_origem)
-    
-    if (!is_empty(filtros$estado)){
-      dados_aux = dados_aux %>%
-        filter(estado %in% filtros$estado)
-    }
-    
-    if (!is_empty(filtros$meso)){
-      dados_aux = dados_aux %>%
-        filter(mesorregioes %in% filtros$meso)
-    }
-    
-    if (!is_empty(filtros$micro)){
-      dados_aux = dados_aux %>%
-        filter(microrregioes %in% filtros$micro)
-    }
-    
-    if (!is_empty(filtros$municipio)){
-      dados_aux = dados_aux %>%
-        filter(municipio %in% filtros$municipio)
-    }
-    
-    df$filtrado <- dados_aux
-    
-    DT::datatable(
-      dados_aux,
-      rownames = FALSE,
-      filter = "none", 
-      style = "bootstrap",
-      class = "stripe hover cell-border compact",
-      options = list(
-        dom = 'fltip', 
-        pageLength = 10,
-        lengthMenu = c(5, 10, 25, 50, 100),
-        scrollX = TRUE,
-        autoWidth = TRUE,
-        searchHighlight = TRUE,
-        columnDefs = list(
-          list(className = 'dt-center', targets = "_all"),
-          list(targets = 0, title = "Estado")
-        )
-      )
-    ) %>%
-      DT::formatStyle(
-        columns = names(dados_aux),
-        fontSize = '14px',
-        color = 'black',
-        fontWeight = 'normal',
-        textAlign = 'center'
-      )
-  })
+  # output$tabela = renderDataTable({
+  #   req(dados)
+  #   dados_aux = dados %>%
+  #     select(estado, uf, everything(), -arquivo_origem)
+  #   
+  #   if (!is_empty(filtros$estado)){
+  #     dados_aux = dados_aux %>%
+  #       filter(estado %in% filtros$estado)
+  #   }
+  #   
+  #   if (!is_empty(filtros$meso)){
+  #     dados_aux = dados_aux %>%
+  #       filter(mesorregioes %in% filtros$meso)
+  #   }
+  #   
+  #   if (!is_empty(filtros$micro)){
+  #     dados_aux = dados_aux %>%
+  #       filter(microrregioes %in% filtros$micro)
+  #   }
+  #   
+  #   if (!is_empty(filtros$municipio)){
+  #     dados_aux = dados_aux %>%
+  #       filter(municipio %in% filtros$municipio)
+  #   }
+  #   
+  #   df$filtrado <- dados_aux
+  #   
+  #   DT::datatable(
+  #     dados_aux,
+  #     rownames = FALSE,
+  #     filter = "none", 
+  #     style = "bootstrap",
+  #     class = "stripe hover cell-border compact",
+  #     options = list(
+  #       dom = 'fltip', 
+  #       pageLength = 10,
+  #       lengthMenu = c(5, 10, 25, 50, 100),
+  #       scrollX = TRUE,
+  #       autoWidth = TRUE,
+  #       searchHighlight = TRUE,
+  #       columnDefs = list(
+  #         list(className = 'dt-center', targets = "_all"),
+  #         list(targets = 0, title = "Estado")
+  #       )
+  #     )
+  #   ) %>%
+  #     DT::formatStyle(
+  #       columns = names(dados_aux),
+  #       fontSize = '14px',
+  #       color = 'black',
+  #       fontWeight = 'normal',
+  #       textAlign = 'center'
+  #     )
+  # })
+# OUTPUT ----
+## tabela ----
+output$tabela = renderDataTable({
+  req(dados)
+
+  # Aplicar filtros
+  dados_aux = dados
+  if (!is_empty(filtros$estado)) {
+    dados_aux = dados_aux %>% filter(estado %in% filtros$estado)
+  }
+  if (!is_empty(filtros$meso)) {
+    dados_aux = dados_aux %>% filter(mesorregioes %in% filtros$meso)
+  }
+  if (!is_empty(filtros$micro)) {
+    dados_aux = dados_aux %>% filter(microrregioes %in% filtros$micro)
+  }
+  if (!is_empty(filtros$municipio)) {
+    dados_aux = dados_aux %>% filter(municipio %in% filtros$municipio)
+  }
+
+  # Salvar no reativo
+  df$filtrado <- dados_aux
+
+  # Selecionar colunas
+  dados_aux <- dados_aux %>%
+    select(
+      estado, uf, municipio, mesorregioes, microrregioes,
+      total_pop_em_situacao_de_rua,
+      masculino, feminino,
+      sem_instrucao, fundamental_incompleto, fundamental_completo,
+      medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+      sem_resposta_18,
+      branca, preta, amarela, parda, indigena, sem_resposta_30
+    )
+
+  # Aplicar ordenação condicional
+  if (
+    is_empty(filtros$estado) &&
+    is_empty(filtros$meso) &&
+    is_empty(filtros$micro) &&
+    is_empty(filtros$municipio)
+  ) {
+    dados_aux <- dados_aux %>% arrange(municipio)  # Ordem alfabética
+  } else {
+    dados_aux <- dados_aux %>% arrange(desc(total_pop_em_situacao_de_rua))  # Ordem decrescente
+  }
+
+  # Renomear colunas
+  colnames(dados_aux) <- c(
+    "Estado", "UF", "Município", "Mesorregião", "Microrregião",
+    "População em Situação de Rua",
+    "Masculino", "Feminino",
+    "Sem Instrução", "Fundamental Incompleto", "Fundamental Completo",
+    "Médio Incompleto", "Médio Completo", "Superior Incompleto ou +",
+    "Sem Resposta (Escolaridade)",
+    "Branca", "Preta", "Amarela", "Parda", "Indígena", "Sem Resposta (Raça)"
+  )
+
+  # Exibir tabela
+  DT::datatable(
+    dados_aux,
+    rownames = FALSE,
+    filter = "none",
+    style = "bootstrap",
+    class = "stripe hover cell-border compact",
+    options = list(
+      dom = 'fltip',
+      pageLength = 10,
+      lengthMenu = c(5, 10, 25, 50, 100),
+      scrollX = TRUE,
+      autoWidth = TRUE,
+      searchHighlight = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = "_all"))
+    )
+  ) %>%
+    DT::formatStyle(
+      columns = names(dados_aux),
+      fontSize = '14px',
+      color = 'black',
+      fontWeight = 'normal',
+      textAlign = 'center'
+    )
+})
+
   
+
 # banco de dados tratado para sexo
   
   observe({
@@ -381,36 +466,98 @@ PsexoServer <- function(input, output, session, dados) {
   }) 
     
 
+# output$plot_1 <- renderHighchart({
+#   req(df$plot_negros)
+# 
+#   # Extrair categorias ordenadas
+#   categorias <- levels(df$plot_negros$GrauInstrucao)
+#   
+#   # Criar séries para cada sexo
+#   serie_masculino <- df$plot_negros %>%
+#     filter(Sexo == "Masculino") %>%
+#     arrange(GrauInstrucao) %>%
+#     pull(Populacao)
+#   
+#   serie_feminino <- df$plot_negros %>%
+#     filter(Sexo == "Feminino") %>%
+#     arrange(GrauInstrucao) %>%
+#     pull(Populacao)
+#   
+#   highchart() %>%
+#     hc_chart(type = "column") %>%
+#     hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
+#     hc_xAxis(categories = categorias,
+#              title = list(text = "Grau de Instrução")) %>%
+#     hc_yAxis(title = list(text = "População estimada"),
+#              labels = list(format = "{value:,.0f}")) %>%
+#     hc_plotOptions(column = list(grouping = TRUE)) %>%
+#     hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
+#     hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
+#     hc_legend(enabled = TRUE)
+# })
+  
 output$plot_1 <- renderHighchart({
   req(df$plot_negros)
 
-  # Extrair categorias ordenadas
   categorias <- levels(df$plot_negros$GrauInstrucao)
-  
-  # Criar séries para cada sexo
-  serie_masculino <- df$plot_negros %>%
+
+  serie_masculino <- round(df$plot_negros %>%
     filter(Sexo == "Masculino") %>%
     arrange(GrauInstrucao) %>%
-    pull(Populacao)
-  
-  serie_feminino <- df$plot_negros %>%
+    pull(Populacao))
+
+  serie_feminino <- round(df$plot_negros %>%
     filter(Sexo == "Feminino") %>%
     arrange(GrauInstrucao) %>%
-    pull(Populacao)
+    pull(Populacao))
+
+  highchart() %>%
+    hc_chart(type = "column") %>%
+    hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
+    hc_xAxis(categories = categorias,
+             title = list(text = "Grau de Instrução")) %>%
+    hc_yAxis(
+      title = list(text = "População estimada"),
+      labels = list(format = "{value:,.0f}"),
+      max = 80000
+    ) %>%
+    hc_plotOptions(column = list(grouping = TRUE)) %>%
+    hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
+    hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
+    hc_legend(enabled = TRUE) %>%
+    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
+})
+output$plot_1 <- renderHighchart({
+  req(df$plot_negros)
+  
+  categorias <- levels(df$plot_negros$GrauInstrucao)
+  
+  serie_masculino <- round(df$plot_negros %>%
+                             filter(Sexo == "Masculino") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+  
+  serie_feminino <- round(df$plot_negros %>%
+                            filter(Sexo == "Feminino") %>%
+                            arrange(GrauInstrucao) %>%
+                            pull(Populacao))
   
   highchart() %>%
     hc_chart(type = "column") %>%
     hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
     hc_xAxis(categories = categorias,
              title = list(text = "Grau de Instrução")) %>%
-    hc_yAxis(title = list(text = "População estimada"),
-             labels = list(format = "{value:,.0f}")) %>%
+    hc_yAxis(
+      title = list(text = "População estimada"),
+      labels = list(format = "{value:,.0f}"),
+      max = 80000
+    ) %>%
     hc_plotOptions(column = list(grouping = TRUE)) %>%
     hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
     hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
-    hc_legend(enabled = TRUE)
+    hc_legend(enabled = TRUE) %>%
+    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
 })
-  
 
 
 
@@ -418,32 +565,63 @@ output$plot_1 <- renderHighchart({
 # ----------------------
 # Gráfico 2 – População Não Negra
 # ----------------------
+# output$plot_2 <- renderHighchart({
+#   req(df$plot_n_negros)
+#   
+#   categorias <- levels(df$plot_n_negros$GrauInstrucao)
+#   
+#   serie_masculino <- df$plot_n_negros %>%
+#     filter(Sexo == "Masculino") %>%
+#     arrange(GrauInstrucao) %>%
+#     pull(Populacao)
+#   
+#   serie_feminino <- df$plot_n_negros %>%
+#     filter(Sexo == "Feminino") %>%
+#     arrange(GrauInstrucao) %>%
+#     pull(Populacao)
+#   
+#   highchart() %>%
+#     hc_chart(type = "column") %>%
+#     hc_title(text = "População Não Negra por Sexo e Grau de Instrução") %>%
+#     hc_xAxis(categories = categorias) %>%
+#     hc_yAxis(title = list(text = "População estimada"),
+#              labels = list(format = "{value:,.0f}")) %>%
+#     hc_add_series(name = "Masculino",
+#                   data = serie_masculino,
+#                   color = "#1f77b4") %>%
+#     hc_add_series(name = "Feminino",
+#                   data = serie_feminino,
+#                   color = "#ff7f0e")
+# })
 output$plot_2 <- renderHighchart({
   req(df$plot_n_negros)
   
   categorias <- levels(df$plot_n_negros$GrauInstrucao)
   
-  serie_masculino <- df$plot_n_negros %>%
-    filter(Sexo == "Masculino") %>%
-    arrange(GrauInstrucao) %>%
-    pull(Populacao)
+  serie_masculino <- round(df$plot_n_negros %>%
+                             filter(Sexo == "Masculino") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
   
-  serie_feminino <- df$plot_n_negros %>%
-    filter(Sexo == "Feminino") %>%
-    arrange(GrauInstrucao) %>%
-    pull(Populacao)
+  serie_feminino <- round(df$plot_n_negros %>%
+                            filter(Sexo == "Feminino") %>%
+                            arrange(GrauInstrucao) %>%
+                            pull(Populacao))
   
   highchart() %>%
     hc_chart(type = "column") %>%
     hc_title(text = "População Não Negra por Sexo e Grau de Instrução") %>%
-    hc_xAxis(categories = categorias) %>%
-    hc_yAxis(title = list(text = "População estimada"),
-             labels = list(format = "{value:,.0f}")) %>%
-    hc_add_series(name = "Masculino",
-                  data = serie_masculino,
-                  color = "#1f77b4") %>%
-    hc_add_series(name = "Feminino",
-                  data = serie_feminino,
-                  color = "#ff7f0e")
+    hc_xAxis(categories = categorias,
+             title = list(text = "Grau de Instrução")) %>%
+    hc_yAxis(
+      title = list(text = "População estimada"),
+      labels = list(format = "{value:,.0f}"),
+      max = 80000
+    ) %>%
+    hc_plotOptions(column = list(grouping = TRUE)) %>%
+    hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
+    hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
+    hc_legend(enabled = TRUE) %>%
+    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
 })
 }

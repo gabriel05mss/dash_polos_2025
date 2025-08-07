@@ -40,7 +40,7 @@ PidadeUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('titulo que quiser', align = 'center'), #trocar titulo
+        title = h1('Ranking Municípios', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -161,60 +161,86 @@ PidadeServer <- function(input, output, session, dados) {
   
   #OUTPUT ----
   ##tabela ----
-  output$tabela = renderDataTable({
+  output$tabela <- renderDataTable({
     req(dados)
-    dados_aux = dados %>%
-      select(estado, uf, everything(), -arquivo_origem)
     
-    if (!is_empty(filtros$estado)){
-      dados_aux = dados_aux %>%
-        filter(estado %in% filtros$estado)
+    # Seleciona apenas as colunas desejadas, com UF e estado primeiro
+    dados_aux <- dados %>%
+      select(
+        estado, uf, municipio, mesorregioes, microrregioes,
+        total_pop_em_situacao_de_rua,
+        entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17, 
+        entre_18_a_24, entre_25_a_34, entre_35_a_39, entre_40_a_44,
+        entre_45_a_49, entre_50_a_54, entre_55_a_59, entre_60_a_64,
+        maior_que_65,
+        sem_instrucao, fundamental_incompleto, fundamental_completo,
+        medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+        sem_resposta_18,
+        branca, preta, amarela, parda, indigena, sem_resposta_30
+      )
+    
+    # Filtros
+    if (!is_empty(filtros$estado)) {
+      dados_aux <- dados_aux %>% filter(estado %in% filtros$estado)
+    }
+    if (!is_empty(filtros$meso)) {
+      dados_aux <- dados_aux %>% filter(mesorregioes %in% filtros$meso)
+    }
+    if (!is_empty(filtros$micro)) {
+      dados_aux <- dados_aux %>% filter(microrregioes %in% filtros$micro)
+    }
+    if (!is_empty(filtros$municipio)) {
+      dados_aux <- dados_aux %>% filter(municipio %in% filtros$municipio)
     }
     
-    if (!is_empty(filtros$meso)){
-      dados_aux = dados_aux %>%
-        filter(mesorregioes %in% filtros$meso)
-    }
-    
-    if (!is_empty(filtros$micro)){
-      dados_aux = dados_aux %>%
-        filter(microrregioes %in% filtros$micro)
-    }
-    
-    if (!is_empty(filtros$municipio)){
-      dados_aux = dados_aux %>%
-        filter(municipio %in% filtros$municipio)
-    }
-    
+    # Salva no reativo global
     df$filtrado <- dados_aux
     
+    # Ordena por população em situação de rua (decrescente)
+    dados_aux <- dados_aux %>%
+      arrange(desc(total_pop_em_situacao_de_rua))
+    
+    # Renomeia as colunas para nomes mais amigáveis
+    colnames(dados_aux) <- c(
+      "Estado", "UF", "Município", "Mesorregião", "Microrregião",
+      "População em Situação de Rua",
+      "0 a 4 anos", "5 a 6 anos", "7 a 15 anos", "16 a 17 anos", 
+      "18 a 24 anos", "25 a 34 anos", "35 a 39 anos", "40 a 44 anos",
+      "45 a 49 anos", "50 a 54 anos", "55 a 59 anos", "60 a 64 anos",
+      "65 anos ou mais",
+      "Sem instrução", "Fund. incompleto", "Fund. completo",
+      "Médio incompleto", "Médio completo", "Superior ou +", "Sem resposta (Escolaridade)",
+      "Branca", "Preta", "Amarela", "Parda", "Indígena", "Sem resposta (Raça)"
+    )
+    
+    # Cria a tabela
     DT::datatable(
       dados_aux,
       rownames = FALSE,
-      filter = "none", 
+      filter = "none",
       style = "bootstrap",
       class = "stripe hover cell-border compact",
       options = list(
-        dom = 'fltip', 
+        dom = 'fltip',
         pageLength = 10,
         lengthMenu = c(5, 10, 25, 50, 100),
         scrollX = TRUE,
         autoWidth = TRUE,
         searchHighlight = TRUE,
         columnDefs = list(
-          list(className = 'dt-center', targets = "_all"),
-          list(targets = 0, title = "Estado")
+          list(className = 'dt-center', targets = "_all")
         )
       )
     ) %>%
       DT::formatStyle(
         columns = names(dados_aux),
-        fontSize = '14px',
+        fontSize = '12px',
         color = 'black',
         fontWeight = 'normal',
         textAlign = 'center'
       )
   })
+  
   
   #output$plot_1 = renderHighchart({ 
   #req(df$filtrado)
@@ -373,15 +399,80 @@ PidadeServer <- function(input, output, session, dados) {
   })
   
   
+  # plot_grafico_escolaridade <- function(dados, grupo_racial, titulo = NULL) {
+  #   
+  #   ordem_faixas <- c("0 a 17 anos", "18 a 39 anos", "40 a 59 anos", "60 anos ou mais")
+  #   ordem_instrucao <- c(
+  #     "Sem instrução",
+  #     "Fund. incompleto",
+  #     "Fund. completo",
+  #     "Médio incompleto",
+  #     "Médio completo",
+  #     "Superior ou +",
+  #     "Sem resposta"
+  #   )
+  #   
+  #   
+  #   # Filtro pelo grupo racial
+  #   dados_grafico <- dados %>%
+  #     filter(GrupoRacial == grupo_racial) %>%
+  #     group_by(GrauInstrucao, FaixaEtaria) %>%
+  #     summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
+  #     mutate(
+  #       FaixaEtaria = factor(FaixaEtaria, levels = ordem_faixas),
+  #       GrauInstrucao = factor(GrauInstrucao, levels = ordem_instrucao)
+  #     )
+  #   
+  #   categorias_x <- levels(dados_grafico$GrauInstrucao)
+  #   faixas <- levels(dados_grafico$FaixaEtaria)
+  #   
+  #   # Cores para as faixas etárias
+  #   cores <- RColorBrewer::brewer.pal(n = max(3, min(12, length(faixas))), name = "Set2")
+  #   if (length(faixas) > length(cores)) {
+  #     cores <- rep(cores, length.out = length(faixas))
+  #   }
+  #   
+  #   # Título padrão se não for fornecido
+  #   if (is.null(titulo)) {
+  #     titulo <- paste("Distribuição por Escolaridade e Faixa Etária -", grupo_racial)
+  #   }
+  #   
+  #   # Cria o gráfico
+  #   hc <- highchart() %>%
+  #     hc_chart(type = "column") %>%
+  #     hc_title(text = titulo) %>%
+  #     hc_xAxis(categories = categorias_x, title = list(text = "Grau de Instrução")) %>%
+  #     hc_yAxis(title = list(text = "População Estimada"), labels = list(format = "{value:,.0f}")) %>%
+  #     hc_plotOptions(column = list(grouping = TRUE)) %>%
+  #     hc_legend(title = list(text = "Faixa Etária"), enabled = TRUE)
+  #   
+  #   # Adiciona as séries por faixa etária
+  #   for (i in seq_along(faixas)) {
+  #     faixa_i <- faixas[i]
+  #     dados_i <- dados_grafico %>%
+  #       filter(FaixaEtaria == faixa_i) %>%
+  #       arrange(match(GrauInstrucao, categorias_x)) %>%
+  #       pull(Populacao)
+  #     
+  #     hc <- hc %>%
+  #       hc_add_series(name = faixa_i, data = dados_i, color = cores[i])
+  #   }
+  #   
+  #   hc
+  # }
   plot_grafico_escolaridade <- function(dados, grupo_racial, titulo = NULL) {
     
     ordem_faixas <- c("0 a 17 anos", "18 a 39 anos", "40 a 59 anos", "60 anos ou mais")
     ordem_instrucao <- c(
-      "Sem instrução", "Fundamental incompleto", "Fundamental completo",
-      "Médio incompleto", "Médio completo", "Superior ou mais", "Sem resposta"
+      "Sem instrução",
+      "Fund. incompleto",
+      "Fund. completo",
+      "Médio incompleto",
+      "Médio completo",
+      "Superior ou +",
+      "Sem resposta"
     )
     
-    # Filtro pelo grupo racial
     dados_grafico <- dados %>%
       filter(GrupoRacial == grupo_racial) %>%
       group_by(GrauInstrucao, FaixaEtaria) %>%
@@ -394,33 +485,32 @@ PidadeServer <- function(input, output, session, dados) {
     categorias_x <- levels(dados_grafico$GrauInstrucao)
     faixas <- levels(dados_grafico$FaixaEtaria)
     
-    # Cores para as faixas etárias
     cores <- RColorBrewer::brewer.pal(n = max(3, min(12, length(faixas))), name = "Set2")
     if (length(faixas) > length(cores)) {
       cores <- rep(cores, length.out = length(faixas))
     }
     
-    # Título padrão se não for fornecido
     if (is.null(titulo)) {
       titulo <- paste("Distribuição por Escolaridade e Faixa Etária -", grupo_racial)
     }
     
-    # Cria o gráfico
     hc <- highchart() %>%
       hc_chart(type = "column") %>%
       hc_title(text = titulo) %>%
       hc_xAxis(categories = categorias_x, title = list(text = "Grau de Instrução")) %>%
-      hc_yAxis(title = list(text = "População Estimada"), labels = list(format = "{value:,.0f}")) %>%
+      hc_yAxis(title = list(text = "População Estimada"),
+               labels = list(format = "{value:,.0f}"),
+               max = 60000) %>%
       hc_plotOptions(column = list(grouping = TRUE)) %>%
       hc_legend(title = list(text = "Faixa Etária"), enabled = TRUE)
     
-    # Adiciona as séries por faixa etária
     for (i in seq_along(faixas)) {
       faixa_i <- faixas[i]
       dados_i <- dados_grafico %>%
         filter(FaixaEtaria == faixa_i) %>%
         arrange(match(GrauInstrucao, categorias_x)) %>%
-        pull(Populacao)
+        pull(Populacao) %>%
+        round()
       
       hc <- hc %>%
         hc_add_series(name = faixa_i, data = dados_i, color = cores[i])
