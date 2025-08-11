@@ -477,8 +477,7 @@ deficienteServer <- function(input, output, session, dados) {
       hc_xAxis(categories = categorias,
                title = list(text = "Grau de Instrução")) %>%
       hc_yAxis(title = list(text = "População estimada"),
-               labels = list(format = "{value:,.0f}"),
-               max = 80000) %>%
+               labels = list(format = "{value:,.0f}")) %>%
       hc_plotOptions(column = list(grouping = TRUE)) %>%
       hc_add_series(name = "Com deficiência", data = serie_com_def, color = "#1f77b4") %>%
       hc_add_series(name = "Sem deficiência",  data = serie_sem_def,  color = "#ff7f0e") %>%
@@ -509,8 +508,7 @@ deficienteServer <- function(input, output, session, dados) {
       hc_xAxis(categories = categorias,
                title = list(text = "Grau de Instrução")) %>%
       hc_yAxis(title = list(text = "População estimada"),
-               labels = list(format = "{value:,.0f}"),
-               max = 80000) %>%
+               labels = list(format = "{value:,.0f}")) %>%
       hc_plotOptions(column = list(grouping = TRUE)) %>%
       hc_add_series(name = "Com deficiência", data = serie_com_def, color = "#1f77b4") %>%
       hc_add_series(name = "Sem deficiência",  data = serie_sem_def,  color = "#ff7f0e") %>%

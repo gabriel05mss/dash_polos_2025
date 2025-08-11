@@ -549,9 +549,7 @@ output$plot_1 <- renderHighchart({
              title = list(text = "Grau de Instrução")) %>%
     hc_yAxis(
       title = list(text = "População estimada"),
-      labels = list(format = "{value:,.0f}"),
-      max = 80000
-    ) %>%
+      labels = list(format = "{value:,.0f}")) %>%
     hc_plotOptions(column = list(grouping = TRUE)) %>%
     hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
     hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
@@ -615,9 +613,7 @@ output$plot_2 <- renderHighchart({
              title = list(text = "Grau de Instrução")) %>%
     hc_yAxis(
       title = list(text = "População estimada"),
-      labels = list(format = "{value:,.0f}"),
-      max = 80000
-    ) %>%
+      labels = list(format = "{value:,.0f}")) %>%
     hc_plotOptions(column = list(grouping = TRUE)) %>%
     hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
     hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%

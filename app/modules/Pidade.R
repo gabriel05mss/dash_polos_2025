@@ -499,8 +499,7 @@ PidadeServer <- function(input, output, session, dados) {
       hc_title(text = titulo) %>%
       hc_xAxis(categories = categorias_x, title = list(text = "Grau de Instrução")) %>%
       hc_yAxis(title = list(text = "População Estimada"),
-               labels = list(format = "{value:,.0f}"),
-               max = 60000) %>%
+               labels = list(format = "{value:,.0f}")) %>%
       hc_plotOptions(column = list(grouping = TRUE)) %>%
       hc_legend(title = list(text = "Faixa Etária"), enabled = TRUE)
     
