@@ -60,7 +60,7 @@ equipeUI <- function(id) {
     
     div(class = "card-container",
         
-        # Membro 1
+        # Coordenador
         div(class = "member-card",
             div(class = "member-name", "Andrezza Cristina Santos"),
             tags$ul(class = "member-role",
@@ -70,8 +70,29 @@ equipeUI <- function(id) {
             a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
             a(icon("envelope"), href = "andrezza-II@hotmail.com", class = "icon-btn")
         ),
+        # Coordenador
+        div(class = "member-card",
+            div(class = "member-name", "Andrezza Cristina Santos"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/andrezza-cristina-santos-batista-b7828723a", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "andrezza-II@hotmail.com", class = "icon-btn")
+        ),
+            # Membro1
+            div(class = "member-card",
+                div(class = "member-name", "Andrezza Cristina Santos"),
+                tags$ul(class = "member-role",
+                        tags$li("Pesquisador extensionista")
+                ),
+                a(icon("linkedin"), href = "https://www.linkedin.com/in/andrezza-cristina-santos-batista-b7828723a", class = "icon-btn", target = "_blank"),
+                a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
+                a(icon("envelope"), href = "andrezza-II@hotmail.com", class = "icon-btn")
+            ),
         # Membro 2
         div(class = "member-card",
+            tags$img(src = "img/caique.jpeg", height = "100px", class = "member-photo"),
             div(class = "member-name", "Caique Izidoro Alvarenga"),
             tags$ul(class = "member-role",
                     tags$li("Pesquisador extensionista")
@@ -95,8 +116,7 @@ equipeUI <- function(id) {
         div(class = "member-card",
             div(class = "member-name", "Gabriel Moreira da Silva"),
             tags$ul(class = "member-role",
-                    tags$li("Cientista de Dados"),
-                    tags$li("Analista de BI")
+                    tags$li("Pesquisador extensionista")
             ),
             a(icon("linkedin"), href = "https://www.linkedin.com/in/gabriel-moreira-73341a23b/", class = "icon-btn", target = "_blank"),
             a(icon("file-alt"), href = "http://lattes.cnpq.br/987654321", class = "icon-btn", target = "_blank"),
