@@ -296,7 +296,7 @@ deficienteServer <- function(input, output, session, dados) {
     ) %>%
       DT::formatStyle(
         columns = names(dados_aux),
-        fontSize = '14px',
+        fontSize = '11px',
         color = 'black',
         fontWeight = 'normal',
         textAlign = 'center'

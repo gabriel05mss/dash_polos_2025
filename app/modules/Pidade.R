@@ -234,7 +234,7 @@ PidadeServer <- function(input, output, session, dados) {
     ) %>%
       DT::formatStyle(
         columns = names(dados_aux),
-        fontSize = '12px',
+        fontSize = '10px',
         color = 'black',
         fontWeight = 'normal',
         textAlign = 'center'

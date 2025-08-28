@@ -294,7 +294,7 @@ output$tabela = renderDataTable({
   ) %>%
     DT::formatStyle(
       columns = names(dados_aux),
-      fontSize = '14px',
+      fontSize = '12px',
       color = 'black',
       fontWeight = 'normal',
       textAlign = 'center'
