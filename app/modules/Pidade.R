@@ -175,8 +175,8 @@ PidadeServer <- function(input, output, session, dados) {
         maior_que_65,
         sem_instrucao, fundamental_incompleto, fundamental_completo,
         medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-        sem_resposta_18,
-        branca, preta, amarela, parda, indigena, sem_resposta_30
+        sem_resposta_10,
+        branca, preta, amarela, parda, indigena, sem_resposta_16
       )
     
     # Filtros
@@ -269,13 +269,13 @@ PidadeServer <- function(input, output, session, dados) {
         medio_incompleto, 
         medio_completo, 
         superior_incompleto_ou_mais,
-        sem_resposta_18,
+        sem_resposta_10,
         branca,                                                                             
         preta,                                                                             
         amarela,                                                                         
         parda,                                                                              
         indigena,                                                                         
-        sem_resposta_30,
+        sem_resposta_16,
         estado,
         uf
       )
@@ -291,7 +291,7 @@ PidadeServer <- function(input, output, session, dados) {
           entre_60_a_64, maior_que_65,
           sem_instrucao, fundamental_incompleto, fundamental_completo,
           medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-          sem_resposta_18, branca, preta, amarela, parda, indigena, sem_resposta_30
+          sem_resposta_10, branca, preta, amarela, parda, indigena, sem_resposta_16
         ),
         ~as.numeric(gsub(",", ".", .))
       ))
@@ -310,7 +310,7 @@ PidadeServer <- function(input, output, session, dados) {
     dados_faixa_instrucao <- dados_faixa_instrucao %>%
       mutate(
         pop_negra = preta + parda,
-        pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
+        pop_nao_negra = branca + amarela + indigena + sem_resposta_16,
         prop_negra = ifelse(total_pop_em_situacao_de_rua > 0,
                             pop_negra / total_pop_em_situacao_de_rua, 0),
         prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0,
@@ -339,10 +339,10 @@ PidadeServer <- function(input, output, session, dados) {
     dados_long_instrucao <- dados_faixa_instrucao %>%
       select(municipio, fundamental_incompleto, fundamental_completo,
              medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-             sem_instrucao, sem_resposta_18) %>%
+             sem_instrucao, sem_resposta_10) %>%
       pivot_longer(
         cols = c(sem_instrucao, fundamental_incompleto, fundamental_completo,
-                 medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18),
+                 medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_10),
         names_to = "GrauInstrucao",
         values_to = "PopulacaoInstrucao"
       ) %>%
@@ -353,7 +353,7 @@ PidadeServer <- function(input, output, session, dados) {
                                     "medio_incompleto" = "Médio incompleto",
                                     "medio_completo" = "Médio completo",
                                     "superior_incompleto_ou_mais" = "Superior ou +",
-                                    "sem_resposta_18" = "Sem resposta"
+                                    "sem_resposta_10" = "Sem resposta"
       ))
     
     # 6. Cruzar FaixaEtaria x GrauInstrucao usando produto cartesiano

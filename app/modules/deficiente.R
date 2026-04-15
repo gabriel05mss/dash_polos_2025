@@ -245,12 +245,12 @@ deficienteServer <- function(input, output, session, dados) {
         mesorregioes,
         microrregioes,
         total_pop_em_situacao_de_rua,
-        sim_162,
-        nao_164,
+        sim,
+        nao,
         sem_instrucao, fundamental_incompleto, fundamental_completo,
         medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-        sem_resposta_18,
-        branca, preta, amarela, parda, indigena, sem_resposta_30
+        sem_resposta_10,
+        branca, preta, amarela, parda, indigena, sem_resposta_16
       )
     
     # Aplicar ordenação condicional
@@ -321,13 +321,13 @@ deficienteServer <- function(input, output, session, dados) {
         medio_incompleto, 
         medio_completo, 
         superior_incompleto_ou_mais,
-        sem_resposta_18,
+        sem_resposta_10,
         branca,                                                                             
         preta,                                                                             
         amarela,                                                                         
         parda,                                                                              
         indigena,                                                                         
-        sem_resposta_30,
+        sem_resposta_16,
         estado,
         uf
       )
@@ -337,8 +337,8 @@ deficienteServer <- function(input, output, session, dados) {
       mutate(across(
         c(sim_162, nao_164, total_pop_em_situacao_de_rua,
           sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18,
-          branca, preta, amarela, parda, indigena, sem_resposta_30),
+          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_10,
+          branca, preta, amarela, parda, indigena, sem_resposta_16),
         ~ as.numeric(.)
       ))
     
@@ -355,7 +355,7 @@ deficienteServer <- function(input, output, session, dados) {
     dados_raca <- dados_proporcional %>%
       mutate(
         pop_negra = preta + parda,
-        pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
+        pop_nao_negra = branca + amarela + indigena + sem_resposta_16,
         prop_negra = ifelse(total_pop_em_situacao_de_rua > 0,
                             pop_negra / total_pop_em_situacao_de_rua, 0),
         prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0,
@@ -367,7 +367,7 @@ deficienteServer <- function(input, output, session, dados) {
       pivot_longer(
         cols = c(
           sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18
+          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_10
         ),
         names_to = "GrauInstrucao",
         values_to = "PopulacaoGrau"
@@ -420,7 +420,7 @@ deficienteServer <- function(input, output, session, dados) {
       "medio_incompleto" = "Médio incompleto",
       "medio_completo" = "Médio completo",
       "superior_incompleto_ou_mais" = "Superior ou +",
-      "sem_resposta_18" = "Sem resposta"
+      "sem_resposta_10" = "Sem resposta"
     )
     
     ordem_graus <- c(
