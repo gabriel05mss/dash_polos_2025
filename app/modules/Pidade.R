@@ -10,10 +10,13 @@ PidadeUI <- function(id) {
         solidHeader = TRUE,
         fluidRow(
           width = 12,
+          column(1),
           column(2, uiOutput(ns("estado_ui"))),
-          column(2, offset = 1, uiOutput(ns("meso_ui"))),
-          column(2, offset = 2, uiOutput(ns("micro_ui"))),
-          column(2, offset = 1,uiOutput(ns("municipio_ui")))
+          column(2, uiOutput(ns("meso_ui"))),
+          column(2, uiOutput(ns("micro_ui"))),
+          column(2, uiOutput(ns("municipio_ui"))),
+          column(2, uiOutput(ns("ano_ui"))),
+          column(1)
         )
       )
     ),
@@ -42,6 +45,7 @@ PidadeUI <- function(id) {
       box(
         title = h1('Ranking Municípios', align = 'center'), #trocar titulo
         width = 12,
+        style = "overflow-x: auto;",
         collapsible = TRUE,
         solidHeader = TRUE,
         withSpinner(dataTableOutput(ns("tabela")), type = 1, color = "#ffae00", size = 2)
@@ -59,7 +63,8 @@ PidadeServer <- function(input, output, session, dados) {
     estado = NULL,
     meso = NULL,
     micro = NULL,
-    municipio = NULL
+    municipio = NULL,
+    ano = NULL
   )
   ##dados ----
   df <- reactiveValues(
@@ -96,6 +101,14 @@ PidadeServer <- function(input, output, session, dados) {
     req(dados)
     selectizeInput(ns("Municipio"), "Município",
                    choices = c("TODOS", sort(unique(dados$municipio))),
+                   selected = "TODOS", multiple = TRUE, options = list(maxOptions = 10000))
+  })
+  
+  ##Ano -----
+  output$ano_ui <- renderUI({
+    req(dados)
+    selectizeInput(ns("Ano"), "Ano",
+                   choices = c("TODOS", sort(unique(dados$ano))),
                    selected = "TODOS", multiple = TRUE, options = list(maxOptions = 10000))
   })
   
@@ -137,6 +150,14 @@ PidadeServer <- function(input, output, session, dados) {
     }
   })
   
+  observeEvent(input$Ano, {
+    if (!is.null(input$Ano) && "TODOS" %in% input$Ano && length(input$Ano) > 1) {
+      sendSweetAlert(session, "Erro",
+                     "A opção 'TODOS' não pode ser combinada com outros anos",
+                     type = "warning")
+      updateSelectizeInput(session, "Ano", selected = "TODOS")
+    }
+  })
   
   ##filtros ----
   observe({
@@ -159,6 +180,11 @@ PidadeServer <- function(input, output, session, dados) {
     filtros$municipio <- if ("TODOS" %in% input$Municipio) unique(dados$municipio) else input$Municipio
   })
   
+  observe({
+    req(dados, input$Ano)
+    filtros$ano <- if ("TODOS" %in% input$Ano) unique(dados$ano) else input$Ano
+  })
+  
   #OUTPUT ----
   ##tabela ----
   output$tabela <- renderDataTable({
@@ -167,17 +193,53 @@ PidadeServer <- function(input, output, session, dados) {
     # Seleciona apenas as colunas desejadas, com UF e estado primeiro
     dados_aux <- dados %>%
       select(
-        estado, uf, municipio, mesorregioes, microrregioes,
+        ano,
+        estado,
+        uf,
+        municipio,
+        mesorregioes,
+        microrregioes,
         total_pop_em_situacao_de_rua,
-        entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17, 
-        entre_18_a_24, entre_25_a_34, entre_35_a_39, entre_40_a_44,
-        entre_45_a_49, entre_50_a_54, entre_55_a_59, entre_60_a_64,
+        entre_0_e_4,
+        entre_5_a_6,
+        entre_7_a_15,
+        entre_16_a_17, 
+        entre_18_a_24,
+        entre_25_a_34,
+        entre_35_a_39,
+        entre_40_a_44,
+        entre_45_a_49,
+        entre_50_a_54,
+        entre_55_a_59,
+        entre_60_a_64,
         maior_que_65,
-        sem_instrucao, fundamental_incompleto, fundamental_completo,
-        medio_incompleto, medio_completo, superior_incompleto_ou_mais,
+        sem_instrucao,
+        fundamental_incompleto,
+        fundamental_completo,
+        medio_incompleto,
+        medio_completo,
+        superior_incompleto_ou_mais,
         sem_resposta_10,
-        branca, preta, amarela, parda, indigena, sem_resposta_16
+        branca,
+        preta,
+        amarela,
+        parda,
+        indigena,
+        sem_resposta_16
       )
+    
+    # Aplicar ordenação condicional
+    if (
+      is_empty(filtros$ano) &&
+      is_empty(filtros$estado) &&
+      is_empty(filtros$meso) &&
+      is_empty(filtros$micro) &&
+      is_empty(filtros$municipio)
+    ) {
+      dados_aux <- dados_aux %>% arrange(municipio)  # Ordem alfabética
+    } else {
+      dados_aux <- dados_aux %>% arrange(desc(total_pop_em_situacao_de_rua))  # Ordem decrescente
+    }
     
     # Filtros
     if (!is_empty(filtros$estado)) {
@@ -192,6 +254,9 @@ PidadeServer <- function(input, output, session, dados) {
     if (!is_empty(filtros$municipio)) {
       dados_aux <- dados_aux %>% filter(municipio %in% filtros$municipio)
     }
+    if (!is_empty(filtros$ano)) {
+      dados_aux = dados_aux %>% filter(ano %in% filtros$ano)
+    }
     
     # Salva no reativo global
     df$filtrado <- dados_aux
@@ -202,15 +267,39 @@ PidadeServer <- function(input, output, session, dados) {
     
     # Renomeia as colunas para nomes mais amigáveis
     colnames(dados_aux) <- c(
-      "Estado", "UF", "Município", "Mesorregião", "Microrregião",
+      "Ano",
+      "Estado",
+      "UF",
+      "Município",
+      "Mesorregião",
+      "Microrregião",
       "População em Situação de Rua",
-      "0 a 4 anos", "5 a 6 anos", "7 a 15 anos", "16 a 17 anos", 
-      "18 a 24 anos", "25 a 34 anos", "35 a 39 anos", "40 a 44 anos",
-      "45 a 49 anos", "50 a 54 anos", "55 a 59 anos", "60 a 64 anos",
+      "0 a 4 anos",
+      "5 a 6 anos",
+      "7 a 15 anos",
+      "16 a 17 anos", 
+      "18 a 24 anos",
+      "25 a 34 anos",
+      "35 a 39 anos",
+      "40 a 44 anos",
+      "45 a 49 anos",
+      "50 a 54 anos",
+      "55 a 59 anos",
+      "60 a 64 anos",
       "65 anos ou mais",
-      "Sem instrução", "Fund. incompleto", "Fund. completo",
-      "Médio incompleto", "Médio completo", "Superior ou +", "Sem resposta (Escolaridade)",
-      "Branca", "Preta", "Amarela", "Parda", "Indígena", "Sem resposta (Raça)"
+      "Sem instrução",
+      "Fund. incompleto",
+      "Fund. completo",
+      "Médio incompleto",
+      "Médio completo",
+      "Superior ou +",
+      "Sem resposta (Escolaridade)",
+      "Branca",
+      "Preta",
+      "Amarela",
+      "Parda",
+      "Indígena",
+      "Sem resposta (Raça)"
     )
     
     # Cria a tabela
@@ -241,27 +330,29 @@ PidadeServer <- function(input, output, session, dados) {
       )
   })
   
-  
-  #output$plot_1 = renderHighchart({ 
-  #req(df$filtrado)
-  #continuar a desenvolver graficos, usar df$filtrado
-  #})
-  
-  #replicar codigo acima para todos os graficos
-  #lembrar de trocar o id do grafico para nn dar conflito
-  # Reativo com dados organizados por faixa etária
-
   dados_plot_faixa_etaria <- reactive({
     req(df$filtrado)
     dadosfaixaetaria <- df$filtrado %>%
       select(
+        ano,
+        estado,
+        uf,
         municipio,
         mesorregioes,
         microrregioes,
         total_pop_em_situacao_de_rua,
-        entre_0_e_4,entre_5_a_6,entre_7_a_15,entre_16_a_17, 
-        entre_18_a_24, entre_25_a_34,entre_35_a_39, entre_40_a_44,
-        entre_45_a_49,entre_50_a_54, entre_55_a_59, entre_60_a_64,
+        entre_0_e_4,
+        entre_5_a_6,
+        entre_7_a_15,
+        entre_16_a_17, 
+        entre_18_a_24,
+        entre_25_a_34,
+        entre_35_a_39,
+        entre_40_a_44,
+        entre_45_a_49,
+        entre_50_a_54,
+        entre_55_a_59,
+        entre_60_a_64,
         maior_que_65,
         sem_instrucao,
         fundamental_incompleto, 
@@ -275,9 +366,7 @@ PidadeServer <- function(input, output, session, dados) {
         amarela,                                                                         
         parda,                                                                              
         indigena,                                                                         
-        sem_resposta_16,
-        estado,
-        uf
+        sem_resposta_16
       )
     #---------------------
     # 1. Garantir que todas as colunas necessárias sejam numéricas
@@ -285,13 +374,32 @@ PidadeServer <- function(input, output, session, dados) {
       mutate(across(
         c(
           total_pop_em_situacao_de_rua,
-          entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17,
-          entre_18_a_24, entre_25_a_34, entre_35_a_39,
-          entre_40_a_44, entre_45_a_49, entre_50_a_54, entre_55_a_59,
-          entre_60_a_64, maior_que_65,
-          sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-          sem_resposta_10, branca, preta, amarela, parda, indigena, sem_resposta_16
+          entre_0_e_4,
+          entre_5_a_6,
+          entre_7_a_15,
+          entre_16_a_17,
+          entre_18_a_24,
+          entre_25_a_34,
+          entre_35_a_39,
+          entre_40_a_44,
+          entre_45_a_49,
+          entre_50_a_54,
+          entre_55_a_59,
+          entre_60_a_64,
+          maior_que_65,
+          sem_instrucao,
+          fundamental_incompleto,
+          fundamental_completo,
+          medio_incompleto,
+          medio_completo,
+          superior_incompleto_ou_mais,
+          sem_resposta_10,
+          branca,
+          preta,
+          amarela,
+          parda,
+          indigena,
+          sem_resposta_16
         ),
         ~as.numeric(gsub(",", ".", .))
       ))
@@ -300,10 +408,27 @@ PidadeServer <- function(input, output, session, dados) {
     # 2. Criar colunas de faixa etária
     dados_faixa_instrucao <- dados_faixa_instrucao %>%
       mutate(
-        faixa_0_17 = rowSums(across(c(entre_0_e_4, entre_5_a_6, entre_7_a_15, entre_16_a_17)), na.rm = TRUE),
-        faixa_18_39 = rowSums(across(c(entre_18_a_24, entre_25_a_34, entre_35_a_39)), na.rm = TRUE),
-        faixa_40_59 = rowSums(across(c(entre_40_a_44, entre_45_a_49, entre_50_a_54, entre_55_a_59)), na.rm = TRUE),
-        faixa_60_mais = rowSums(across(c(entre_60_a_64, maior_que_65)), na.rm = TRUE)
+        faixa_0_17 = rowSums(across(c(
+          entre_0_e_4,
+          entre_5_a_6,
+          entre_7_a_15,
+          entre_16_a_17
+          )), na.rm = TRUE),
+        faixa_18_39 = rowSums(across(c(
+          entre_18_a_24,
+          entre_25_a_34,
+          entre_35_a_39
+          )), na.rm = TRUE),
+        faixa_40_59 = rowSums(across(c(
+          entre_40_a_44,
+          entre_45_a_49,
+          entre_50_a_54,
+          entre_55_a_59
+          )), na.rm = TRUE),
+        faixa_60_mais = rowSums(across(c(
+          entre_60_a_64,
+          maior_que_65
+          )), na.rm = TRUE)
       )
     
     # 3. Calcular proporções raciais
@@ -319,9 +444,18 @@ PidadeServer <- function(input, output, session, dados) {
     
     # 4. Transformar faixas etárias em long
     dados_long_faixa <- dados_faixa_instrucao %>%
-      select(municipio, mesorregioes, microrregioes, estado, uf,
-             total_pop_em_situacao_de_rua, prop_negra, prop_nao_negra,
-             faixa_0_17, faixa_18_39, faixa_40_59, faixa_60_mais) %>%
+      select(municipio,
+             mesorregioes,
+             microrregioes,
+             estado,
+             uf,
+             total_pop_em_situacao_de_rua,
+             prop_negra,
+             prop_nao_negra,
+             faixa_0_17,
+             faixa_18_39,
+             faixa_40_59,
+             faixa_60_mais) %>%
       pivot_longer(
         cols = starts_with("faixa_"),
         names_to = "FaixaEtariaRaw",
@@ -337,12 +471,22 @@ PidadeServer <- function(input, output, session, dados) {
     
     # 5. Transformar graus de instrução em long
     dados_long_instrucao <- dados_faixa_instrucao %>%
-      select(municipio, fundamental_incompleto, fundamental_completo,
-             medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-             sem_instrucao, sem_resposta_10) %>%
+      select(municipio,
+             fundamental_incompleto,
+             fundamental_completo,
+             medio_incompleto,
+             medio_completo,
+             superior_incompleto_ou_mais,
+             sem_instrucao,
+             sem_resposta_10) %>%
       pivot_longer(
-        cols = c(sem_instrucao, fundamental_incompleto, fundamental_completo,
-                 medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_10),
+        cols = c(sem_instrucao, 
+                 fundamental_incompleto, 
+                 fundamental_completo,
+                 medio_incompleto,
+                 medio_completo,
+                 superior_incompleto_ou_mais,
+                 sem_resposta_10),
         names_to = "GrauInstrucao",
         values_to = "PopulacaoInstrucao"
       ) %>%
@@ -381,15 +525,27 @@ PidadeServer <- function(input, output, session, dados) {
     # 7. Formatar dados finais tidy
     # População Negra
     dados_negra <- dados_cruzado %>%
-      select(municipio, mesorregioes, microrregioes, estado, uf,
-             FaixaEtaria, GrauInstrucao, estimativa_negra) %>%
+      select(municipio,
+             mesorregioes,
+             microrregioes,
+             estado,
+             uf,
+             FaixaEtaria,
+             GrauInstrucao,
+             estimativa_negra) %>%
       rename(Populacao = estimativa_negra) %>%
       mutate(GrupoRacial = "Negra")
     
     # População Não Negra
     dados_nao_negra <- dados_cruzado %>%
-      select(municipio, mesorregioes, microrregioes, estado, uf,
-             FaixaEtaria, GrauInstrucao, estimativa_nao_negra) %>%
+      select(municipio,
+             mesorregioes,
+             microrregioes,
+             estado,
+             uf,
+             FaixaEtaria,
+             GrauInstrucao,
+             estimativa_nao_negra) %>%
       rename(Populacao = estimativa_nao_negra) %>%
       mutate(GrupoRacial = "Não negra")
     
@@ -398,71 +554,12 @@ PidadeServer <- function(input, output, session, dados) {
     
   })
   
-  
-  # plot_grafico_escolaridade <- function(dados, grupo_racial, titulo = NULL) {
-  #   
-  #   ordem_faixas <- c("0 a 17 anos", "18 a 39 anos", "40 a 59 anos", "60 anos ou mais")
-  #   ordem_instrucao <- c(
-  #     "Sem instrução",
-  #     "Fund. incompleto",
-  #     "Fund. completo",
-  #     "Médio incompleto",
-  #     "Médio completo",
-  #     "Superior ou +",
-  #     "Sem resposta"
-  #   )
-  #   
-  #   
-  #   # Filtro pelo grupo racial
-  #   dados_grafico <- dados %>%
-  #     filter(GrupoRacial == grupo_racial) %>%
-  #     group_by(GrauInstrucao, FaixaEtaria) %>%
-  #     summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
-  #     mutate(
-  #       FaixaEtaria = factor(FaixaEtaria, levels = ordem_faixas),
-  #       GrauInstrucao = factor(GrauInstrucao, levels = ordem_instrucao)
-  #     )
-  #   
-  #   categorias_x <- levels(dados_grafico$GrauInstrucao)
-  #   faixas <- levels(dados_grafico$FaixaEtaria)
-  #   
-  #   # Cores para as faixas etárias
-  #   cores <- RColorBrewer::brewer.pal(n = max(3, min(12, length(faixas))), name = "Set2")
-  #   if (length(faixas) > length(cores)) {
-  #     cores <- rep(cores, length.out = length(faixas))
-  #   }
-  #   
-  #   # Título padrão se não for fornecido
-  #   if (is.null(titulo)) {
-  #     titulo <- paste("Distribuição por Escolaridade e Faixa Etária -", grupo_racial)
-  #   }
-  #   
-  #   # Cria o gráfico
-  #   hc <- highchart() %>%
-  #     hc_chart(type = "column") %>%
-  #     hc_title(text = titulo) %>%
-  #     hc_xAxis(categories = categorias_x, title = list(text = "Grau de Instrução")) %>%
-  #     hc_yAxis(title = list(text = "População Estimada"), labels = list(format = "{value:,.0f}")) %>%
-  #     hc_plotOptions(column = list(grouping = TRUE)) %>%
-  #     hc_legend(title = list(text = "Faixa Etária"), enabled = TRUE)
-  #   
-  #   # Adiciona as séries por faixa etária
-  #   for (i in seq_along(faixas)) {
-  #     faixa_i <- faixas[i]
-  #     dados_i <- dados_grafico %>%
-  #       filter(FaixaEtaria == faixa_i) %>%
-  #       arrange(match(GrauInstrucao, categorias_x)) %>%
-  #       pull(Populacao)
-  #     
-  #     hc <- hc %>%
-  #       hc_add_series(name = faixa_i, data = dados_i, color = cores[i])
-  #   }
-  #   
-  #   hc
-  # }
   plot_grafico_escolaridade <- function(dados, grupo_racial, titulo = NULL) {
     
-    ordem_faixas <- c("0 a 17 anos", "18 a 39 anos", "40 a 59 anos", "60 anos ou mais")
+    ordem_faixas <- c("0 a 17 anos",
+                      "18 a 39 anos",
+                      "40 a 59 anos",
+                      "60 anos ou mais")
     ordem_instrucao <- c(
       "Sem instrução",
       "Fund. incompleto",

@@ -112,7 +112,7 @@ source("modules/equipe.R")
 #         
 #         footer = bs4DashFooter(
 #           left = "Fonte: Levantamento realizado pelo Observatório Brasileiro de Políticas Públicas com a População em Situação de
-# Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro/2024) ", #trocar depois
+# Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro) ", #trocar depois
 #           right = Sys.Date()
 #         )
 #       )
@@ -252,7 +252,7 @@ server <- function(input, output, session) {
         ),
         
         footer = bs4DashFooter(
-          left = "Fonte: Levantamento realizado pelo Observatório Brasileiro de Políticas Públicas com a População em Situação de Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro/2024)",
+          left = "Fonte: Levantamento realizado pelo Observatório Brasileiro de Políticas Públicas com a População em Situação de Rua/POLOS-UFMG a partir da consulta ao CECAD (Mês de Referência: Dezembro)",
           right = Sys.Date()
         )
       )
