@@ -4,19 +4,16 @@ PidadeUI <- function(id) {
     
     fluidRow(
       box(
-        title = h1('Escolaridade por Faixa Etária - População em Situação de Rua no Brasil - Dezembro/2024', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Faixa Etária - População em Situação de Rua no Brasil', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
         fluidRow(
           width = 12,
-          column(1),
-          column(2, uiOutput(ns("estado_ui"))),
-          column(2, uiOutput(ns("meso_ui"))),
-          column(2, uiOutput(ns("micro_ui"))),
-          column(2, uiOutput(ns("municipio_ui"))),
-          column(2, uiOutput(ns("ano_ui"))),
-          column(1)
+          column(3, uiOutput(ns("estado_ui"))),
+          column(3, uiOutput(ns("meso_ui"))),
+          column(3, uiOutput(ns("micro_ui"))),
+          column(3, uiOutput(ns("municipio_ui")))
         )
       )
     ),
@@ -24,7 +21,7 @@ PidadeUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('Escolaridade por Faixa Etária - População Negra', align = 'center'), #trocar tituloo
+        title = h1('Escolaridade por Faixa Etária - População Negra - 2024', align = 'center'), #trocar tituloo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -32,11 +29,30 @@ PidadeUI <- function(id) {
       ),
       
       box(
-        title = h1('Escolaridade por Faixa Etária - População Não Negra', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Faixa Etária - População Negra - 2025', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
         withSpinner(highchartOutput(ns("plot_2")), type = 1, color = "#ffae00", size = 2)
+      )
+    ),
+    
+    fluidRow(
+      
+      box(
+        title = h1('Escolaridade por Faixa Etária - População Não Negra - 2024', align = 'center'), #trocar tituloo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_3")), type = 1, color = "#ffae00", size = 2)
+      ),
+      
+      box(
+        title = h1('Escolaridade por Faixa Etária - População Não Negra - 2025', align = 'center'), #trocar titulo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_4")), type = 1, color = "#ffae00", size = 2)
       )
     ),
     
@@ -63,8 +79,7 @@ PidadeServer <- function(input, output, session, dados) {
     estado = NULL,
     meso = NULL,
     micro = NULL,
-    municipio = NULL,
-    ano = NULL
+    municipio = NULL
   )
   ##dados ----
   df <- reactiveValues(
@@ -101,14 +116,6 @@ PidadeServer <- function(input, output, session, dados) {
     req(dados)
     selectizeInput(ns("Municipio"), "Município",
                    choices = c("TODOS", sort(unique(dados$municipio))),
-                   selected = "TODOS", multiple = TRUE, options = list(maxOptions = 10000))
-  })
-  
-  ##Ano -----
-  output$ano_ui <- renderUI({
-    req(dados)
-    selectizeInput(ns("Ano"), "Ano",
-                   choices = c("TODOS", sort(unique(dados$ano))),
                    selected = "TODOS", multiple = TRUE, options = list(maxOptions = 10000))
   })
   
@@ -150,15 +157,7 @@ PidadeServer <- function(input, output, session, dados) {
     }
   })
   
-  observeEvent(input$Ano, {
-    if (!is.null(input$Ano) && "TODOS" %in% input$Ano && length(input$Ano) > 1) {
-      sendSweetAlert(session, "Erro",
-                     "A opção 'TODOS' não pode ser combinada com outros anos",
-                     type = "warning")
-      updateSelectizeInput(session, "Ano", selected = "TODOS")
-    }
-  })
-  
+
   ##filtros ----
   observe({
     req(dados, input$Estado)
@@ -178,11 +177,6 @@ PidadeServer <- function(input, output, session, dados) {
   observe({
     req(dados, input$Municipio)
     filtros$municipio <- if ("TODOS" %in% input$Municipio) unique(dados$municipio) else input$Municipio
-  })
-  
-  observe({
-    req(dados, input$Ano)
-    filtros$ano <- if ("TODOS" %in% input$Ano) unique(dados$ano) else input$Ano
   })
   
   #OUTPUT ----
@@ -230,7 +224,6 @@ PidadeServer <- function(input, output, session, dados) {
     
     # Aplicar ordenação condicional
     if (
-      is_empty(filtros$ano) &&
       is_empty(filtros$estado) &&
       is_empty(filtros$meso) &&
       is_empty(filtros$micro) &&
@@ -253,9 +246,6 @@ PidadeServer <- function(input, output, session, dados) {
     }
     if (!is_empty(filtros$municipio)) {
       dados_aux <- dados_aux %>% filter(municipio %in% filtros$municipio)
-    }
-    if (!is_empty(filtros$ano)) {
-      dados_aux = dados_aux %>% filter(ano %in% filtros$ano)
     }
     
     # Salva no reativo global
@@ -444,7 +434,8 @@ PidadeServer <- function(input, output, session, dados) {
     
     # 4. Transformar faixas etárias em long
     dados_long_faixa <- dados_faixa_instrucao %>%
-      select(municipio,
+      select(ano,
+             municipio,
              mesorregioes,
              microrregioes,
              estado,
@@ -471,7 +462,8 @@ PidadeServer <- function(input, output, session, dados) {
     
     # 5. Transformar graus de instrução em long
     dados_long_instrucao <- dados_faixa_instrucao %>%
-      select(municipio,
+      select(ano,
+             municipio,
              fundamental_incompleto,
              fundamental_completo,
              medio_incompleto,
@@ -502,7 +494,7 @@ PidadeServer <- function(input, output, session, dados) {
     
     # 6. Cruzar FaixaEtaria x GrauInstrucao usando produto cartesiano
     dados_cruzado <- dados_long_faixa %>%
-      left_join(dados_long_instrucao, by = "municipio") %>%
+      left_join(dados_long_instrucao, by = c("municipio", "ano")) %>%
       mutate(
         estimativa_total = ifelse(
           is.finite(PopulacaoFaixa) & is.finite(PopulacaoInstrucao) & total_pop_em_situacao_de_rua > 0,
@@ -525,7 +517,8 @@ PidadeServer <- function(input, output, session, dados) {
     # 7. Formatar dados finais tidy
     # População Negra
     dados_negra <- dados_cruzado %>%
-      select(municipio,
+      select(ano,
+             municipio,
              mesorregioes,
              microrregioes,
              estado,
@@ -538,7 +531,8 @@ PidadeServer <- function(input, output, session, dados) {
     
     # População Não Negra
     dados_nao_negra <- dados_cruzado %>%
-      select(municipio,
+      select(ano,
+             municipio,
              mesorregioes,
              microrregioes,
              estado,
@@ -618,7 +612,7 @@ PidadeServer <- function(input, output, session, dados) {
   
   output$plot_1 <- renderHighchart({
     plot_grafico_escolaridade(
-      dados = dados_plot_faixa_etaria(),
+      dados = dados_plot_faixa_etaria() %>% filter(ano == "2024"),
       grupo_racial = "Negra",
       titulo = "População Negra - Grau de Instrução x Faixa Etária"
     )
@@ -626,7 +620,23 @@ PidadeServer <- function(input, output, session, dados) {
   
   output$plot_2 <- renderHighchart({
     plot_grafico_escolaridade(
-      dados = dados_plot_faixa_etaria(),
+      dados = dados_plot_faixa_etaria() %>% filter(ano == "2025"),
+      grupo_racial = "Negra",
+      titulo = "População Negra - Grau de Instrução x Faixa Etária"
+    )
+  })
+  
+  output$plot_3 <- renderHighchart({
+    plot_grafico_escolaridade(
+      dados = dados_plot_faixa_etaria() %>% filter(ano == "2024"),
+      grupo_racial = "Não negra",
+      titulo = "População Não Negra - Grau de Instrução x Faixa Etária"
+    )
+  })
+  
+  output$plot_4 <- renderHighchart({
+    plot_grafico_escolaridade(
+      dados = dados_plot_faixa_etaria() %>% filter(ano == "2025"),
       grupo_racial = "Não negra",
       titulo = "População Não Negra - Grau de Instrução x Faixa Etária"
     )
