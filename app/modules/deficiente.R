@@ -4,16 +4,16 @@ deficienteUI <- function(id) {
     
     fluidRow(
       box(
-        title = h1('Escolaridade por Pessoa Possui Deficiência - População em Situação de Rua no Brasil - Dezembro/2024', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População em Situação de Rua no Brasil', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
         fluidRow(
           width = 12,
-          column(2, uiOutput(ns("estado_ui"))),
-          column(2, offset = 1, uiOutput(ns("meso_ui"))),
-          column(2, offset = 2, uiOutput(ns("micro_ui"))),
-          column(2, offset = 1,uiOutput(ns("municipio_ui")))
+          column(3, uiOutput(ns("estado_ui"))),
+          column(3, uiOutput(ns("meso_ui"))),
+          column(3, uiOutput(ns("micro_ui"))),
+          column(3, uiOutput(ns("municipio_ui")))
         )
       )
     ),
@@ -21,7 +21,7 @@ deficienteUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('Escolaridade por Pessoa Possui Deficiência - População Negra', align = 'center'), #trocar tituloo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Negra - 2024', align = 'center'), #trocar tituloo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -29,7 +29,7 @@ deficienteUI <- function(id) {
       ),
       
       box(
-        title = h1('Escolaridade por Pessoa Possui Deficiência - População Não Negra', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Negra - 2025', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -40,8 +40,28 @@ deficienteUI <- function(id) {
     fluidRow(
       
       box(
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Não Negra - 2024', align = 'center'), #trocar tituloo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_3")), type = 1, color = "#ffae00", size = 2)
+      ),
+      
+      box(
+        title = h1('Escolaridade por Pessoa Possui Deficiência - População Não Negra - 2025', align = 'center'), #trocar titulo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_4")), type = 1, color = "#ffae00", size = 2)
+      )
+    ),
+    
+    fluidRow(
+      
+      box(
         title = h1('Ranking Municípios', align = 'center'), #trocar titulo
         width = 12,
+        style = "overflow-x: auto;",
         collapsible = TRUE,
         solidHeader = TRUE,
         withSpinner(dataTableOutput(ns("tabela")), type = 1, color = "#ffae00", size = 2)
@@ -159,62 +179,6 @@ deficienteServer <- function(input, output, session, dados) {
     filtros$municipio <- if ("TODOS" %in% input$Municipio) unique(dados$municipio) else input$Municipio
   })
   
-  #OUTPUT ----
-  ##tabela ----
-  # output$tabela = renderDataTable({
-  #   req(dados)
-  #   dados_aux = dados %>%
-  #     select(estado, uf, everything(), -arquivo_origem)
-  #   
-  #   if (!is_empty(filtros$estado)){
-  #     dados_aux = dados_aux %>%
-  #       filter(estado %in% filtros$estado)
-  #   }
-  #   
-  #   if (!is_empty(filtros$meso)){
-  #     dados_aux = dados_aux %>%
-  #       filter(mesorregioes %in% filtros$meso)
-  #   }
-  #   
-  #   if (!is_empty(filtros$micro)){
-  #     dados_aux = dados_aux %>%
-  #       filter(microrregioes %in% filtros$micro)
-  #   }
-  #   
-  #   if (!is_empty(filtros$municipio)){
-  #     dados_aux = dados_aux %>%
-  #       filter(municipio %in% filtros$municipio)
-  #   }
-  #   
-  #   df$filtrado <- dados_aux
-  #   
-  #   DT::datatable(
-  #     dados_aux,
-  #     rownames = FALSE,
-  #     filter = "none", 
-  #     style = "bootstrap",
-  #     class = "stripe hover cell-border compact",
-  #     options = list(
-  #       dom = 'fltip', 
-  #       pageLength = 10,
-  #       lengthMenu = c(5, 10, 25, 50, 100),
-  #       scrollX = TRUE,
-  #       autoWidth = TRUE,
-  #       searchHighlight = TRUE,
-  #       columnDefs = list(
-  #         list(className = 'dt-center', targets = "_all"),
-  #         list(targets = 0, title = "Estado")
-  #       )
-  #     )
-  #   ) %>%
-  #     DT::formatStyle(
-  #       columns = names(dados_aux),
-  #       fontSize = '14px',
-  #       color = 'black',
-  #       fontWeight = 'normal',
-  #       textAlign = 'center'
-  #     )
-  # })
   output$tabela = renderDataTable({
     req(dados)
     
@@ -239,18 +203,28 @@ deficienteServer <- function(input, output, session, dados) {
     # Selecionar colunas
     dados_aux <- dados_aux %>%
       select(
+        ano,
         estado,
         uf,
         municipio,
         mesorregioes,
         microrregioes,
         total_pop_em_situacao_de_rua,
-        sim_162,
-        nao_164,
-        sem_instrucao, fundamental_incompleto, fundamental_completo,
-        medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-        sem_resposta_18,
-        branca, preta, amarela, parda, indigena, sem_resposta_30
+        sim,
+        nao,
+        sem_instrucao,
+        fundamental_incompleto,
+        fundamental_completo,
+        medio_incompleto,
+        medio_completo,
+        superior_incompleto_ou_mais,
+        sem_resposta_10,
+        branca,
+        preta,
+        amarela,
+        parda,
+        indigena,
+        sem_resposta_16
       )
     
     # Aplicar ordenação condicional
@@ -267,14 +241,28 @@ deficienteServer <- function(input, output, session, dados) {
     
     # Renomear colunas
     colnames(dados_aux) <- c(
-      "Estado", "UF", "Município", "Mesorregião", "Microrregião",
+      "Ano",
+      "Estado",
+      "UF",
+      "Município",
+      "Mesorregião",
+      "Microrregião",
       "População em Situação de Rua",
       "Possui Deficiência = Sim",
       "Possui Deficiência = Não",
-      "Sem Instrução", "Fundamental Incompleto", "Fundamental Completo",
-      "Médio Incompleto", "Médio Completo", "Superior Incompleto ou +",
+      "Sem Instrução",
+      "Fundamental Incompleto",
+      "Fundamental Completo",
+      "Médio Incompleto",
+      "Médio Completo",
+      "Superior Incompleto ou +",
       "Sem Resposta (Escolaridade)",
-      "Branca", "Preta", "Amarela", "Parda", "Indígena", "Sem Resposta (Raça)"
+      "Branca",
+      "Preta",
+      "Amarela",
+      "Parda",
+      "Indígena",
+      "Sem Resposta (Raça)"
     )
     
     # Exibir tabela
@@ -309,25 +297,26 @@ deficienteServer <- function(input, output, session, dados) {
     # 1. Selecionar apenas colunas necessárias
     dadosdef <- df$filtrado %>%
       select(
+        ano,
         municipio,
         mesorregioes,
         microrregioes,
         total_pop_em_situacao_de_rua,
-        sim_162,
-        nao_164,
+        sim,
+        nao,
         sem_instrucao, 
         fundamental_incompleto, 
         fundamental_completo,
         medio_incompleto, 
         medio_completo, 
         superior_incompleto_ou_mais,
-        sem_resposta_18,
+        sem_resposta_10,
         branca,                                                                             
         preta,                                                                             
         amarela,                                                                         
         parda,                                                                              
         indigena,                                                                         
-        sem_resposta_30,
+        sem_resposta_16,
         estado,
         uf
       )
@@ -335,10 +324,22 @@ deficienteServer <- function(input, output, session, dados) {
     # 2. Garantir que colunas sejam numéricas
     dadosdef <- dadosdef %>%
       mutate(across(
-        c(sim_162, nao_164, total_pop_em_situacao_de_rua,
-          sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18,
-          branca, preta, amarela, parda, indigena, sem_resposta_30),
+        c(sim,
+          nao,
+          total_pop_em_situacao_de_rua,
+          sem_instrucao,
+          fundamental_incompleto,
+          fundamental_completo,
+          medio_incompleto,
+          medio_completo,
+          superior_incompleto_ou_mais,
+          sem_resposta_10,
+          branca,
+          preta,
+          amarela,
+          parda,
+          indigena,
+          sem_resposta_16),
         ~ as.numeric(.)
       ))
     
@@ -346,16 +347,16 @@ deficienteServer <- function(input, output, session, dados) {
     dados_proporcional <- dadosdef %>%
       mutate(
         prop_def = ifelse(total_pop_em_situacao_de_rua > 0,
-                          sim_162 / total_pop_em_situacao_de_rua, 0),
+                          sim / total_pop_em_situacao_de_rua, 0),
         prop_sem_def  = ifelse(total_pop_em_situacao_de_rua > 0,
-                               nao_164  / total_pop_em_situacao_de_rua, 0)
+                               nao  / total_pop_em_situacao_de_rua, 0)
       )
     
     # 4. Calcular total de População Negra e Não Negra
     dados_raca <- dados_proporcional %>%
       mutate(
         pop_negra = preta + parda,
-        pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
+        pop_nao_negra = branca + amarela + indigena + sem_resposta_16,
         prop_negra = ifelse(total_pop_em_situacao_de_rua > 0,
                             pop_negra / total_pop_em_situacao_de_rua, 0),
         prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0,
@@ -366,8 +367,13 @@ deficienteServer <- function(input, output, session, dados) {
     dados_long <- dados_raca %>%
       pivot_longer(
         cols = c(
-          sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais, sem_resposta_18
+          sem_instrucao,
+          fundamental_incompleto,
+          fundamental_completo,
+          medio_incompleto,
+          medio_completo,
+          superior_incompleto_ou_mais,
+          sem_resposta_10
         ),
         names_to = "GrauInstrucao",
         values_to = "PopulacaoGrau"
@@ -383,8 +389,15 @@ deficienteServer <- function(input, output, session, dados) {
     # 6. População Negra
     dados_negra <- dados_long %>%
       select(
-        municipio, mesorregioes, microrregioes, estado, uf,
-        GrauInstrucao, pop_def_negra, pop_sem_def_negra
+        ano,
+        municipio,
+        mesorregioes,
+        microrregioes,
+        estado,
+        uf,
+        GrauInstrucao,
+        pop_def_negra,
+        pop_sem_def_negra
       ) %>%
       pivot_longer(
         cols = c(pop_def_negra, pop_sem_def_negra),
@@ -398,8 +411,15 @@ deficienteServer <- function(input, output, session, dados) {
     # 7. População Não Negra
     dados_nao_negra <- dados_long %>%
       select(
-        municipio, mesorregioes, microrregioes, estado, uf,
-        GrauInstrucao, pop_def_nao_negra, pop_sem_def_nao_negra
+        ano,
+        municipio,
+        mesorregioes,
+        microrregioes,
+        estado,
+        uf,
+        GrauInstrucao,
+        pop_def_nao_negra,
+        pop_sem_def_nao_negra
       ) %>%
       pivot_longer(
         cols = c(pop_def_nao_negra, pop_sem_def_nao_negra),
@@ -420,7 +440,7 @@ deficienteServer <- function(input, output, session, dados) {
       "medio_incompleto" = "Médio incompleto",
       "medio_completo" = "Médio completo",
       "superior_incompleto_ou_mais" = "Superior ou +",
-      "sem_resposta_18" = "Sem resposta"
+      "sem_resposta_10" = "Sem resposta"
     )
     
     ordem_graus <- c(
@@ -438,14 +458,14 @@ deficienteServer <- function(input, output, session, dados) {
     
     dados_def <- dados_plot %>%
       filter(GrupoRacial == "Negra") %>%
-      group_by(GrauInstrucao, Deficiencia) %>%
+      group_by(ano, GrauInstrucao, Deficiencia) %>%
       summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
       mutate(GrauInstrucao = factor(GrauInstrucao, levels = ordem_graus)) %>%
       arrange(GrauInstrucao)
     
     dados_n_def <- dados_plot %>%
       filter(GrupoRacial == "Não negra") %>%
-      group_by(GrauInstrucao, Deficiencia) %>%
+      group_by(ano, GrauInstrucao, Deficiencia) %>%
       summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
       mutate(GrauInstrucao = factor(GrauInstrucao, levels = ordem_graus)) %>%
       arrange(GrauInstrucao)
@@ -459,14 +479,17 @@ deficienteServer <- function(input, output, session, dados) {
   output$plot_1 <- renderHighchart({
     req(df$plot_def)
     
-    categorias <- levels(df$plot_def$GrauInstrucao)
+    def_2024 <- df$plot_def %>%
+      filter(ano == "2024")
     
-    serie_com_def <- round(df$plot_def %>%
+    categorias <- levels(def_2024$GrauInstrucao)
+    
+    serie_com_def <- round(def_2024 %>%
                              filter(Deficiencia == "Com deficiência") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))
     
-    serie_sem_def <- round(df$plot_def %>%
+    serie_sem_def <- round(def_2024 %>%
                              filter(Deficiencia == "Sem deficiência") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))
@@ -485,19 +508,85 @@ deficienteServer <- function(input, output, session, dados) {
       hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
   })
   
-  # --- GRÁFICO POPULAÇÃO NÃO NEGRA ---
-  
   output$plot_2 <- renderHighchart({
-    req(df$plot_n_def)
+    req(df$plot_def)
     
-    categorias <- levels(df$plot_n_def$GrauInstrucao)
+    def_2025 <- df$plot_def %>%
+      filter(ano == "2025")
     
-    serie_com_def <- round(df$plot_n_def %>%
+    categorias <- levels(def_2025$GrauInstrucao)
+    
+    serie_com_def <- round(def_2025 %>%
                              filter(Deficiencia == "Com deficiência") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))
     
-    serie_sem_def <- round(df$plot_n_def %>%
+    serie_sem_def <- round(def_2025 %>%
+                             filter(Deficiencia == "Sem deficiência") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+    
+    highchart() %>%
+      hc_chart(type = "column") %>%
+      hc_title(text = "População Negra por Deficiência e Grau de Instrução") %>%
+      hc_xAxis(categories = categorias,
+               title = list(text = "Grau de Instrução")) %>%
+      hc_yAxis(title = list(text = "População estimada"),
+               labels = list(format = "{value:,.0f}")) %>%
+      hc_plotOptions(column = list(grouping = TRUE)) %>%
+      hc_add_series(name = "Com deficiência", data = serie_com_def, color = "#1f77b4") %>%
+      hc_add_series(name = "Sem deficiência",  data = serie_sem_def,  color = "#ff7f0e") %>%
+      hc_legend(enabled = TRUE) %>%
+      hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
+  })
+  
+  output$plot_3 <- renderHighchart({
+    req(df$plot_n_def)
+    
+    nao_def_2024 <- df$plot_n_def %>%
+      filter(ano == "2024")
+    
+    categorias <- levels(nao_def_2024$GrauInstrucao)
+    
+    serie_com_def <- round(nao_def_2024 %>%
+                             filter(Deficiencia == "Com deficiência") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+    
+    serie_sem_def <- round(nao_def_2024 %>%
+                             filter(Deficiencia == "Sem deficiência") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+    
+    highchart() %>%
+      hc_chart(type = "column") %>%
+      hc_title(text = "População Não Negra por Deficiência e Grau de Instrução") %>%
+      hc_xAxis(categories = categorias,
+               title = list(text = "Grau de Instrução")) %>%
+      hc_yAxis(title = list(text = "População estimada"),
+               labels = list(format = "{value:,.0f}")) %>%
+      hc_plotOptions(column = list(grouping = TRUE)) %>%
+      hc_add_series(name = "Com deficiência", data = serie_com_def, color = "#1f77b4") %>%
+      hc_add_series(name = "Sem deficiência",  data = serie_sem_def,  color = "#ff7f0e") %>%
+      hc_legend(enabled = TRUE) %>%
+      hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
+  })
+  
+
+  output$plot_4 <- renderHighchart({
+    req(df$plot_n_def)
+    
+    nao_def_2025 <- df$plot_n_def %>%
+      filter(ano == "2025")
+    
+    categorias <- levels(nao_def_2025$GrauInstrucao)
+    
+    serie_com_def <- round(nao_def_2025 %>%
+                             filter(Deficiencia == "Com deficiência") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+    
+    serie_sem_def <- round(nao_def_2025 %>%
                              filter(Deficiencia == "Sem deficiência") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))

@@ -4,16 +4,16 @@ PsexoUI <- function(id) {
     
     fluidRow(
       box(
-        title = h1('Escolaridade por Sexo - População em Situação de Rua no Brasil - Dezembro/2024 ', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População em Situação de Rua no Brasil', align = 'center'), #trocar titulo
         width = 12,
         collapsible = TRUE,
         solidHeader = TRUE,
         fluidRow(
           width = 12,
-          column(2, uiOutput(ns("estado_ui"))),
-          column(2, offset = 1, uiOutput(ns("meso_ui"))),
-          column(2, offset = 2, uiOutput(ns("micro_ui"))),
-          column(2, offset = 1,uiOutput(ns("municipio_ui")))
+          column(3, uiOutput(ns("estado_ui"))),
+          column(3, uiOutput(ns("meso_ui"))),
+          column(3, uiOutput(ns("micro_ui"))),
+          column(3, uiOutput(ns("municipio_ui")))
         )
       )
     ),
@@ -21,7 +21,7 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
-        title = h1('Escolaridade por Sexo - População Negra', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População Negra - 2024', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -29,7 +29,7 @@ PsexoUI <- function(id) {
       ),
       
       box(
-        title = h1('Escolaridade por Sexo - População Não Negra', align = 'center'), #trocar titulo
+        title = h1('Escolaridade por Sexo - População Negra - 2025', align = 'center'), #trocar titulo
         width = 6,
         collapsible = TRUE,
         solidHeader = TRUE,
@@ -40,8 +40,28 @@ PsexoUI <- function(id) {
     fluidRow(
       
       box(
+        title = h1('Escolaridade por Sexo - População Não Negra - 2024', align = 'center'), #trocar titulo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_3")), type = 1, color = "#ffae00", size = 2)
+      ),
+      
+      box(
+        title = h1('Escolaridade por Sexo - População Não Negra - 2025', align = 'center'), #trocar titulo
+        width = 6,
+        collapsible = TRUE,
+        solidHeader = TRUE,
+        withSpinner(highchartOutput(ns("plot_4")), type = 1, color = "#ffae00", size = 2)
+      )
+    ),
+    
+    fluidRow(
+      
+      box(
         title = h1('Ranking Municípios', align = 'center'), #trocar titulo
         width = 12,
+        style = "overflow-x: auto;",
         collapsible = TRUE,
         solidHeader = TRUE,
         withSpinner(dataTableOutput(ns("tabela")), type = 1, color = "#ffae00", size = 2)
@@ -139,7 +159,6 @@ PsexoServer <- function(input, output, session, dados) {
     }
   })
   
-  
   ##filtros ----
   observe({
     req(dados, input$Estado)
@@ -161,62 +180,6 @@ PsexoServer <- function(input, output, session, dados) {
     filtros$municipio <- if ("TODOS" %in% input$Municipio) unique(dados$municipio) else input$Municipio
   })
   
-  #OUTPUT ----
-  ##tabela ----
-  # output$tabela = renderDataTable({
-  #   req(dados)
-  #   dados_aux = dados %>%
-  #     select(estado, uf, everything(), -arquivo_origem)
-  #   
-  #   if (!is_empty(filtros$estado)){
-  #     dados_aux = dados_aux %>%
-  #       filter(estado %in% filtros$estado)
-  #   }
-  #   
-  #   if (!is_empty(filtros$meso)){
-  #     dados_aux = dados_aux %>%
-  #       filter(mesorregioes %in% filtros$meso)
-  #   }
-  #   
-  #   if (!is_empty(filtros$micro)){
-  #     dados_aux = dados_aux %>%
-  #       filter(microrregioes %in% filtros$micro)
-  #   }
-  #   
-  #   if (!is_empty(filtros$municipio)){
-  #     dados_aux = dados_aux %>%
-  #       filter(municipio %in% filtros$municipio)
-  #   }
-  #   
-  #   df$filtrado <- dados_aux
-  #   
-  #   DT::datatable(
-  #     dados_aux,
-  #     rownames = FALSE,
-  #     filter = "none", 
-  #     style = "bootstrap",
-  #     class = "stripe hover cell-border compact",
-  #     options = list(
-  #       dom = 'fltip', 
-  #       pageLength = 10,
-  #       lengthMenu = c(5, 10, 25, 50, 100),
-  #       scrollX = TRUE,
-  #       autoWidth = TRUE,
-  #       searchHighlight = TRUE,
-  #       columnDefs = list(
-  #         list(className = 'dt-center', targets = "_all"),
-  #         list(targets = 0, title = "Estado")
-  #       )
-  #     )
-  #   ) %>%
-  #     DT::formatStyle(
-  #       columns = names(dados_aux),
-  #       fontSize = '14px',
-  #       color = 'black',
-  #       fontWeight = 'normal',
-  #       textAlign = 'center'
-  #     )
-  # })
 # OUTPUT ----
 ## tabela ----
 output$tabela = renderDataTable({
@@ -243,13 +206,28 @@ output$tabela = renderDataTable({
   # Selecionar colunas
   dados_aux <- dados_aux %>%
     select(
-      estado, uf, municipio, mesorregioes, microrregioes,
+      ano,
+      estado,
+      uf,
+      municipio,
+      mesorregioes,
+      microrregioes,
       total_pop_em_situacao_de_rua,
-      masculino, feminino,
-      sem_instrucao, fundamental_incompleto, fundamental_completo,
-      medio_incompleto, medio_completo, superior_incompleto_ou_mais,
-      sem_resposta_18,
-      branca, preta, amarela, parda, indigena, sem_resposta_30
+      masculino,
+      feminino,
+      sem_instrucao,
+      fundamental_incompleto,
+      fundamental_completo,
+      medio_incompleto,
+      medio_completo,
+      superior_incompleto_ou_mais,
+      sem_resposta_10,
+      branca,
+      preta,
+      amarela,
+      parda,
+      indigena,
+      sem_resposta_16
     )
 
   # Aplicar ordenação condicional
@@ -266,13 +244,28 @@ output$tabela = renderDataTable({
 
   # Renomear colunas
   colnames(dados_aux) <- c(
-    "Estado", "UF", "Município", "Mesorregião", "Microrregião",
+    "Ano",
+    "Estado",
+    "UF",
+    "Município",
+    "Mesorregião",
+    "Microrregião",
     "População em Situação de Rua",
-    "Masculino", "Feminino",
-    "Sem Instrução", "Fundamental Incompleto", "Fundamental Completo",
-    "Médio Incompleto", "Médio Completo", "Superior Incompleto ou +",
+    "Masculino",
+    "Feminino",
+    "Sem Instrução",
+    "Fundamental Incompleto",
+    "Fundamental Completo",
+    "Médio Incompleto",
+    "Médio Completo",
+    "Superior Incompleto ou +",
     "Sem Resposta (Escolaridade)",
-    "Branca", "Preta", "Amarela", "Parda", "Indígena", "Sem Resposta (Raça)"
+    "Branca",
+    "Preta",
+    "Amarela",
+    "Parda",
+    "Indígena",
+    "Sem Resposta (Raça)"
   )
 
   # Exibir tabela
@@ -310,6 +303,9 @@ output$tabela = renderDataTable({
     # 1. Selecionar apenas colunas necessárias
     dadossexo <- df$filtrado %>%
       select(
+        ano,
+        estado,
+        uf,
         municipio,
         mesorregioes,
         microrregioes,
@@ -322,15 +318,13 @@ output$tabela = renderDataTable({
         medio_incompleto, 
         medio_completo, 
         superior_incompleto_ou_mais,
-        sem_resposta_18,
+        sem_resposta_10,
         branca,                                                                             
         preta,                                                                             
         amarela,                                                                         
         parda,                                                                              
         indigena,                                                                         
-        sem_resposta_30,
-        estado,
-        uf
+        sem_resposta_16
       )
     #----------------------
     
@@ -338,10 +332,22 @@ output$tabela = renderDataTable({
     # 1. Garantir que colunas sejam numéricas
     dadossexo <- dadossexo %>%
       mutate(across(
-        c(masculino, feminino, total_pop_em_situacao_de_rua,
-          sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais,sem_resposta_18,
-          branca, preta, amarela, parda, indigena, sem_resposta_30),
+        c(masculino,
+          feminino,
+          total_pop_em_situacao_de_rua,
+          sem_instrucao,
+          fundamental_incompleto,
+          fundamental_completo,
+          medio_incompleto,
+          medio_completo,
+          superior_incompleto_ou_mais,
+          sem_resposta_10,
+          branca,
+          preta,
+          amarela,
+          parda,
+          indigena,
+          sem_resposta_16),
         ~ as.numeric(.)
       ))
     
@@ -357,7 +363,7 @@ output$tabela = renderDataTable({
     dados_raca <- dados_proporcional %>%
       mutate(
         pop_negra = preta + parda,
-        pop_nao_negra = branca + amarela + indigena + sem_resposta_30,
+        pop_nao_negra = branca + amarela + indigena + sem_resposta_16,
         prop_negra = ifelse(total_pop_em_situacao_de_rua > 0,
                             pop_negra / total_pop_em_situacao_de_rua, 0),
         prop_nao_negra = ifelse(total_pop_em_situacao_de_rua > 0,
@@ -368,8 +374,13 @@ output$tabela = renderDataTable({
     dados_long <- dados_raca %>%
       pivot_longer(
         cols = c(
-          sem_instrucao, fundamental_incompleto, fundamental_completo,
-          medio_incompleto, medio_completo, superior_incompleto_ou_mais,sem_resposta_18
+          sem_instrucao,
+          fundamental_incompleto,
+          fundamental_completo,
+          medio_incompleto,
+          medio_completo,
+          superior_incompleto_ou_mais,
+          sem_resposta_10
         ),
         names_to = "GrauInstrucao",
         values_to = "PopulacaoGrau"
@@ -388,8 +399,15 @@ output$tabela = renderDataTable({
     # População Negra
     dados_negra <- dados_long %>%
       select(
-        municipio, mesorregioes, microrregioes, estado, uf,
-        GrauInstrucao, pop_masc_negra, pop_fem_negra
+        ano,
+        municipio,
+        mesorregioes,
+        microrregioes,
+        estado,
+        uf,
+        GrauInstrucao,
+        pop_masc_negra,
+        pop_fem_negra
       ) %>%
       pivot_longer(
         cols = c(pop_masc_negra, pop_fem_negra),
@@ -403,8 +421,15 @@ output$tabela = renderDataTable({
     # População Não Negra
     dados_nao_negra <- dados_long %>%
       select(
-        municipio, mesorregioes, microrregioes, estado, uf,
-        GrauInstrucao, pop_masc_nao_negra, pop_fem_nao_negra
+        ano,
+        municipio,
+        mesorregioes,
+        microrregioes,
+        estado,
+        uf,
+        GrauInstrucao,
+        pop_masc_nao_negra,
+        pop_fem_nao_negra
       ) %>%
       pivot_longer(
         cols = c(pop_masc_nao_negra, pop_fem_nao_negra),
@@ -426,7 +451,7 @@ output$tabela = renderDataTable({
       "medio_incompleto" = "Médio incompleto",
       "medio_completo" = "Médio completo",
       "superior_incompleto_ou_mais" = "Superior ou +",
-      "sem_resposta_18" = "Sem resposta"
+      "sem_resposta_10" = "Sem resposta"
       
     )
     # Definir a ordem desejada como fator ordenado
@@ -449,14 +474,14 @@ output$tabela = renderDataTable({
     # Preparar os dados
     dados_negros <- dados_plot %>%
       filter(GrupoRacial == "Negra") %>%
-      group_by(GrauInstrucao, Sexo) %>%
+      group_by(ano, GrauInstrucao, Sexo) %>%
       summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
       mutate(GrauInstrucao = factor(GrauInstrucao, levels = ordem_graus)) %>%
       arrange(GrauInstrucao)
     
     dados_nao_negros <- dados_plot %>%
       filter(GrupoRacial == "Não negra") %>%
-      group_by(GrauInstrucao, Sexo) %>%
+      group_by(ano, GrauInstrucao, Sexo) %>%
       summarise(Populacao = sum(Populacao, na.rm = TRUE), .groups = "drop") %>%
       mutate(GrauInstrucao = factor(GrauInstrucao, levels = ordem_graus)) %>%
       arrange(GrauInstrucao)
@@ -464,80 +489,21 @@ output$tabela = renderDataTable({
     df$plot_negros <- dados_negros
     df$plot_n_negros <- dados_nao_negros
   }) 
-    
-
-# output$plot_1 <- renderHighchart({
-#   req(df$plot_negros)
-# 
-#   # Extrair categorias ordenadas
-#   categorias <- levels(df$plot_negros$GrauInstrucao)
-#   
-#   # Criar séries para cada sexo
-#   serie_masculino <- df$plot_negros %>%
-#     filter(Sexo == "Masculino") %>%
-#     arrange(GrauInstrucao) %>%
-#     pull(Populacao)
-#   
-#   serie_feminino <- df$plot_negros %>%
-#     filter(Sexo == "Feminino") %>%
-#     arrange(GrauInstrucao) %>%
-#     pull(Populacao)
-#   
-#   highchart() %>%
-#     hc_chart(type = "column") %>%
-#     hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
-#     hc_xAxis(categories = categorias,
-#              title = list(text = "Grau de Instrução")) %>%
-#     hc_yAxis(title = list(text = "População estimada"),
-#              labels = list(format = "{value:,.0f}")) %>%
-#     hc_plotOptions(column = list(grouping = TRUE)) %>%
-#     hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
-#     hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
-#     hc_legend(enabled = TRUE)
-# })
   
 output$plot_1 <- renderHighchart({
   req(df$plot_negros)
-
-  categorias <- levels(df$plot_negros$GrauInstrucao)
-
-  serie_masculino <- round(df$plot_negros %>%
-    filter(Sexo == "Masculino") %>%
-    arrange(GrauInstrucao) %>%
-    pull(Populacao))
-
-  serie_feminino <- round(df$plot_negros %>%
-    filter(Sexo == "Feminino") %>%
-    arrange(GrauInstrucao) %>%
-    pull(Populacao))
-
-  highchart() %>%
-    hc_chart(type = "column") %>%
-    hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
-    hc_xAxis(categories = categorias,
-             title = list(text = "Grau de Instrução")) %>%
-    hc_yAxis(
-      title = list(text = "População estimada"),
-      labels = list(format = "{value:,.0f}"),
-      max = 80000
-    ) %>%
-    hc_plotOptions(column = list(grouping = TRUE)) %>%
-    hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
-    hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
-    hc_legend(enabled = TRUE) %>%
-    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
-})
-output$plot_1 <- renderHighchart({
-  req(df$plot_negros)
   
-  categorias <- levels(df$plot_negros$GrauInstrucao)
+  negros_2024 <- df$plot_negros %>%
+    filter(ano == "2024" )
   
-  serie_masculino <- round(df$plot_negros %>%
+  categorias <- levels(negros_2024$GrauInstrucao)
+  
+  serie_masculino <- round(negros_2024 %>%
                              filter(Sexo == "Masculino") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))
   
-  serie_feminino <- round(df$plot_negros %>%
+  serie_feminino <- round(negros_2024 %>%
                             filter(Sexo == "Feminino") %>%
                             arrange(GrauInstrucao) %>%
                             pull(Populacao))
@@ -558,50 +524,86 @@ output$plot_1 <- renderHighchart({
 })
 
 
-
-# Nao negro
-# ----------------------
-# Gráfico 2 – População Não Negra
-# ----------------------
-# output$plot_2 <- renderHighchart({
-#   req(df$plot_n_negros)
-#   
-#   categorias <- levels(df$plot_n_negros$GrauInstrucao)
-#   
-#   serie_masculino <- df$plot_n_negros %>%
-#     filter(Sexo == "Masculino") %>%
-#     arrange(GrauInstrucao) %>%
-#     pull(Populacao)
-#   
-#   serie_feminino <- df$plot_n_negros %>%
-#     filter(Sexo == "Feminino") %>%
-#     arrange(GrauInstrucao) %>%
-#     pull(Populacao)
-#   
-#   highchart() %>%
-#     hc_chart(type = "column") %>%
-#     hc_title(text = "População Não Negra por Sexo e Grau de Instrução") %>%
-#     hc_xAxis(categories = categorias) %>%
-#     hc_yAxis(title = list(text = "População estimada"),
-#              labels = list(format = "{value:,.0f}")) %>%
-#     hc_add_series(name = "Masculino",
-#                   data = serie_masculino,
-#                   color = "#1f77b4") %>%
-#     hc_add_series(name = "Feminino",
-#                   data = serie_feminino,
-#                   color = "#ff7f0e")
-# })
 output$plot_2 <- renderHighchart({
-  req(df$plot_n_negros)
+  req(df$plot_negros)
   
-  categorias <- levels(df$plot_n_negros$GrauInstrucao)
+  negros_2025 <- df$plot_negros %>%
+    filter(ano == "2025")
   
-  serie_masculino <- round(df$plot_n_negros %>%
+  categorias <- levels(negros_2025$GrauInstrucao)
+  
+  serie_masculino <- round(negros_2025 %>%
                              filter(Sexo == "Masculino") %>%
                              arrange(GrauInstrucao) %>%
                              pull(Populacao))
   
-  serie_feminino <- round(df$plot_n_negros %>%
+  serie_feminino <- round(negros_2025 %>%
+                            filter(Sexo == "Feminino") %>%
+                            arrange(GrauInstrucao) %>%
+                            pull(Populacao))
+  
+  highchart() %>%
+    hc_chart(type = "column") %>%
+    hc_title(text = "População Negra por Sexo e Grau de Instrução") %>%
+    hc_xAxis(categories = categorias,
+             title = list(text = "Grau de Instrução")) %>%
+    hc_yAxis(
+      title = list(text = "População estimada"),
+      labels = list(format = "{value:,.0f}")) %>%
+    hc_plotOptions(column = list(grouping = TRUE)) %>%
+    hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
+    hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
+    hc_legend(enabled = TRUE) %>%
+    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
+})
+
+output$plot_3 <- renderHighchart({
+  req(df$plot_n_negros)
+  
+  nao_negros_2024 <- df$plot_n_negros %>%
+    filter(ano == "2024")
+  
+  categorias <- levels(nao_negros_2024$GrauInstrucao)
+  
+  serie_masculino <- round(nao_negros_2024 %>%
+                             filter(Sexo == "Masculino") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+  
+  serie_feminino <- round(nao_negros_2024 %>%
+                            filter(Sexo == "Feminino") %>%
+                            arrange(GrauInstrucao) %>%
+                            pull(Populacao))
+  
+  highchart() %>%
+    hc_chart(type = "column") %>%
+    hc_title(text = "População Não Negra por Sexo e Grau de Instrução") %>%
+    hc_xAxis(categories = categorias,
+             title = list(text = "Grau de Instrução")) %>%
+    hc_yAxis(
+      title = list(text = "População estimada"),
+      labels = list(format = "{value:,.0f}")) %>%
+    hc_plotOptions(column = list(grouping = TRUE)) %>%
+    hc_add_series(name = "Masculino", data = serie_masculino, color = "#1f77b4") %>%
+    hc_add_series(name = "Feminino",  data = serie_feminino,  color = "#ff7f0e") %>%
+    hc_legend(enabled = TRUE) %>%
+    hc_tooltip(pointFormat = "<b>{series.name}</b>: {point.y:,.0f}<br/>")
+})
+
+output$plot_4 <- renderHighchart({
+  req(df$plot_n_negros)
+  
+  nao_negros_2025 <- df$plot_n_negros %>%
+    filter(ano == "2025")
+  
+  categorias <- levels(nao_negros_2025$GrauInstrucao)
+  
+  serie_masculino <- round(nao_negros_2025 %>%
+                             filter(Sexo == "Masculino") %>%
+                             arrange(GrauInstrucao) %>%
+                             pull(Populacao))
+  
+  serie_feminino <- round(nao_negros_2025 %>%
                             filter(Sexo == "Feminino") %>%
                             arrange(GrauInstrucao) %>%
                             pull(Populacao))
