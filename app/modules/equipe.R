@@ -68,7 +68,7 @@ equipeUI <- function(id) {
                     tags$li("Organização e Coordenação Técnica/Científica")
             ),
             a(icon("file-alt"), href = "https://pos.direito.ufmg.br/andredias/", class = "icon-btn", target = "_blank")
-           
+            
         ),
         # Coordenador
         div(class = "member-card",
@@ -80,17 +80,15 @@ equipeUI <- function(id) {
             a(icon("file-alt"), href = "https://pos.direito.ufmg.br/mariafernandarepoles/", class = "icon-btn", target = "_blank")
             
         ),
-            # Membro1
-            div(class = "member-card",
-                tags$img(src = "img/andrezza.jpeg", height = "100px", class = "member-photo"),
-                div(class = "member-name", "Andrezza Cristina Santos"),
-                tags$ul(class = "member-role",
-                        tags$li("Pesquisador extensionista")
-                ),
-                a(icon("linkedin"), href = "https://www.linkedin.com/in/andrezza-cristina-santos-batista-b7828723a", class = "icon-btn", target = "_blank"),
-                a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
-                a(icon("envelope"), href = "andrezza-II@hotmail.com", class = "icon-btn")
+        # Membro1
+        div(class = "member-card",
+            tags$img(src = "img/barbara.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Bárbara Cristina Moreira "),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
             ),
+            a(icon("envelope"), href = "babicristinamm@gmail.com", class = "icon-btn")
+        ),
         # Membro 2
         div(class = "member-card",
             tags$img(src = "img/caique.jpeg", height = "100px", class = "member-photo"),
@@ -101,6 +99,17 @@ equipeUI <- function(id) {
             a(icon("linkedin"), href = "https://linkedin.com/in/caiqueizidr", class = "icon-btn", target = "_blank"),
             a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
             a(icon("envelope"), href = "caiqueizidoro369@gmail.com", class = "icon-btn")
+        ),
+        # Membro1
+        div(class = "member-card",
+            tags$img(src = "img/clara.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Clara Martins Vallone "),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/clara-martins-vallone-3aa297351?utm_source=share_via&utm_content=profile&utm_medium=member_android", class = "icon-btn", target = "_blank"),
+            a(icon("file-alt"), href = "https://lattes.cnpq.br/4219162404938632", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "claramvufmg@gmail.com", class = "icon-btn")
         ),
         div(class = "member-card",
             tags$img(src = "img/cristiano.jpeg", height = "100px", class = "member-photo"),
@@ -124,14 +133,12 @@ equipeUI <- function(id) {
         ),
         # Membro 3
         div(class = "member-card",
-            tags$img(src = "img/diogo.jpeg", height = "100px", class = "member-photo"),
-            div(class = "member-name", "Diogo Gomes Pires"),
+            tags$img(src = "img/danielle.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Danielle Santana Neto"),
             tags$ul(class = "member-role",
                     tags$li("Pesquisador extensionista")
             ),
-            a(icon("linkedin"), href = "https://www.linkedin.com/in/diogo-gomes-pires-802076206", class = "icon-btn", target = "_blank"),
-            a(icon("file-alt"), href = "http://lattes.cnpq.br/5116149150044825", class = "icon-btn", target = "_blank"),
-            a(icon("envelope"), href = "diogogomes1109@gmail.com", class = "icon-btn")
+            a(icon("envelope"), href = "daniellesantananeto2@gmail.com", class = "icon-btn")
         ),
         # Membro 3
         div(class = "member-card",
@@ -176,6 +183,33 @@ equipeUI <- function(id) {
             a(icon("linkedin"), href = "https://www.linkedin.com/in/irlana-silva-905457185", class = "icon-btn", target = "_blank"),
             a(icon("file-alt"), href = "https://lattes.cnpq.br/9300533003335560", class = "icon-btn", target = "_blank"),
             a(icon("envelope"), href = "irlannasilva1720@gmail.com", class = "icon-btn")
+        ),
+        # Membro 5
+        div(class = "member-card",
+            tags$img(src = "img/isabel.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Isabel Souza Santos"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("linkedin"), href = "https://www.linkedin.com/in/isabel-souza-santos-516083358?utm_source=share_via&utm_content=profile&utm_medium=member_ios", class = "icon-btn", target = "_blank"),
+            a(icon("envelope"), href = "isabeltrabalhorai@gmail.com", class = "icon-btn")
+        ),
+        # Membro 5
+        div(class = "member-card",
+            tags$img(src = "img/maria eduarda.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Maria Eduarda Magalhães de São Joaquim"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("envelope"), href = "mariaeduardamsj@gmail.com", class = "icon-btn")
+        ),# Membro 5
+        div(class = "member-card",
+            tags$img(src = "img/sara.jpeg", height = "100px", class = "member-photo"),
+            div(class = "member-name", "Sara Júlia Faria Ribeiro"),
+            tags$ul(class = "member-role",
+                    tags$li("Pesquisador extensionista")
+            ),
+            a(icon("envelope"), href = "sara.faria3m@gmail.com", class = "icon-btn")
         )
         
         #pra colocar mais só copiar a colar a div toda, NÃO ESQUECER DA VIRGULA DEPOIS DAS DIVs
