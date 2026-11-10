@@ -186,7 +186,7 @@ equipeUI <- function(id) {
         ),
         # Membro 5
         div(class = "member-card",
-            tags$img(src = "img/isabel.jpeg", height = "100px", class = "member-photo"),
+            tags$img(src = "img/isabels.jpeg", height = "100px", class = "member-photo"),
             div(class = "member-name", "Isabel Souza Santos"),
             tags$ul(class = "member-role",
                     tags$li("Pesquisador extensionista")
